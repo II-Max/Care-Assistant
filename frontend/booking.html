@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Đặt lịch khám trực tuyến tại Bệnh viện Tim Hà Nội. Nhanh chóng, tiện lợi.">
+  <title>Đặt lịch khám — Bệnh viện Tim Hà Nội</title>
+  <link rel="stylesheet" href="css/hospital-design.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📅</text></svg>">
+  <style>
+    /* Booking-specific styles */
+    .booking-container {
+      display: grid;
+      grid-template-columns: 3fr 2fr;
+      gap: 32px;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .booking-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .booking-form {
+      background: #fff;
+      border-radius: var(--border-radius);
+      padding: 40px;
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+    }
+
+    .booking-form h2 {
+      margin-bottom: 8px;
+      color: var(--gray-900);
+    }
+
+    .booking-form .form-subtitle {
+      color: var(--gray-600);
+      margin-bottom: 32px;
+      font-size: var(--font-size-sm);
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      font-size: var(--font-size-sm);
+      color: var(--gray-800);
+      margin-bottom: 8px;
+    }
+
+    .form-group label .required {
+      color: var(--danger);
+      margin-left: 2px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--gray-300);
+      border-radius: var(--border-radius-sm);
+      font-family: var(--font-family);
+      font-size: var(--font-size-md);
+      color: var(--gray-900);
+      background: #fff;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      outline: none;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary-400);
+      box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.12);
+    }
+
+    .form-control.error {
+      border-color: var(--danger);
+      box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.12);
+    }
+
+    .form-control::placeholder {
+      color: var(--gray-400);
+    }
+
+    select.form-control {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23495057' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+      padding-right: 40px;
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 100px;
+      line-height: 1.6;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .form-error {
+      font-size: var(--font-size-xs);
+      color: var(--danger);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .form-error.visible {
+      display: block;
+    }
+
+    .form-control.error + .form-error {
+      display: block;
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--primary-500);
+      cursor: pointer;
+    }
+
+    .checkbox-group label {
+      margin: 0;
+      cursor: pointer;
+      font-weight: 400;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      font-size: var(--font-size-lg);
+      margin-top: 8px;
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* Success state */
+    .booking-success {
+      display: none;
+      text-align: center;
+      padding: 48px 24px;
+    }
+
+    .booking-success.visible {
+      display: block;
+      animation: fadeInUp 0.5s ease;
+    }
+
+    .booking-success .success-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+
+    .booking-success h3 {
+      color: var(--success);
+      margin-bottom: 12px;
+    }
+
+    .booking-success .success-details {
+      background: var(--gray-50);
+      border-radius: var(--border-radius);
+      padding: 24px;
+      margin: 24px 0;
+      text-align: left;
+    }
+
+    .booking-success .success-details dt {
+      font-weight: 600;
+      color: var(--gray-700);
+      margin-top: 12px;
+    }
+
+    .booking-success .success-details dt:first-child {
+      margin-top: 0;
+    }
+
+    .booking-success .success-details dd {
+      color: var(--gray-600);
+      margin-top: 4px;
+    }
+
+    /* Sidebar */
+    .booking-sidebar {
+      position: sticky;
+      top: calc(var(--header-height) + 24px);
+    }
+
+    .booking-sidebar .card {
+      margin-bottom: 16px;
+    }
+
+    .booking-sidebar .card-title {
+      font-size: var(--font-size-md);
+      margin-bottom: 12px;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .info-list li {
+      padding: 8px 0;
+      border-bottom: 1px solid var(--gray-100);
+      font-size: var(--font-size-sm);
+      color: var(--gray-700);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .info-list li:last-child {
+      border-bottom: none;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-radius: 50%;
+      border-top-color: #fff;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🫀</div>
+        <span>BV Tim Hà Nội</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="departments.html">Chuyên khoa</a>
+        <a href="about.html">Giới thiệu</a>
+        <a href="contact.html">Liên hệ</a>
+        <a href="booking.html" class="nav-cta active">📅 Đặt lịch</a>
+        <a href="ai-chat.html">💬 Chat AI</a>
+      </nav>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1>Đặt Lịch Khám</h1>
+      <p>Đặt lịch hẹn trực tuyến — Nhanh chóng, tiện lợi, đúng giờ</p>
+    </div>
+  </section>
+
+  <!-- Booking Content -->
+  <section class="page-content">
+    <div class="container">
+      <div class="booking-container">
+
+        <!-- Form -->
+        <div class="booking-form" id="booking-form-container">
+          <!-- Form -->
+          <div id="booking-form-view">
+            <h2>📝 Thông Tin Đặt Lịch</h2>
+            <p class="form-subtitle">Vui lòng điền đầy đủ thông tin bên dưới. Chúng tôi sẽ liên hệ xác nhận trong giờ hành chính.</p>
+
+            <form id="bookingForm" novalidate>
+              <!-- Họ tên -->
+              <div class="form-group">
+                <label for="patientName">Họ và tên <span class="required">*</span></label>
+                <input type="text" id="patientName" class="form-control" 
+                       placeholder="Nhập họ tên đầy đủ" required maxlength="100">
+                <div class="form-error">Vui lòng nhập họ tên (ít nhất 2 ký tự).</div>
+              </div>
+
+              <!-- Số điện thoại & Email -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="patientPhone">Số điện thoại <span class="required">*</span></label>
+                  <input type="tel" id="patientPhone" class="form-control" 
+                         placeholder="09xxxxxxxx" required maxlength="15">
+                  <div class="form-error">Vui lòng nhập số điện thoại hợp lệ.</div>
+                </div>
+                <div class="form-group">
+                  <label for="patientEmail">Email</label>
+                  <input type="email" id="patientEmail" class="form-control" 
+                         placeholder="email@example.com" maxlength="100">
+                  <div class="form-error">Email không hợp lệ.</div>
+                </div>
+              </div>
+
+              <!-- Chuyên khoa -->
+              <div class="form-group">
+                <label for="department">Chuyên khoa <span class="required">*</span></label>
+                <select id="department" class="form-control" required>
+                  <option value="">-- Chọn chuyên khoa --</option>
+                  <option value="noi-khoa">🫀 Nội khoa Tim mạch</option>
+                  <option value="can-thiep">💉 Tim mạch Can thiệp</option>
+                  <option value="phau-thuat">🔬 Phẫu thuật Tim mạch</option>
+                  <option value="nhi-khoa">👶 Nhi khoa Tim mạch</option>
+                  <option value="chuyen-hoa">🧬 Tim mạch Chuyển hóa</option>
+                  <option value="duoc">💊 Khoa Dược & Hiệu thuốc</option>
+                  <option value="tong-quat">🏥 Khám bệnh Tổng quát</option>
+                </select>
+                <div class="form-error">Vui lòng chọn chuyên khoa.</div>
+              </div>
+
+              <!-- Ngày & Giờ -->
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="bookingDate">Ngày khám <span class="required">*</span></label>
+                  <input type="date" id="bookingDate" class="form-control" required>
+                  <div class="form-error">Vui lòng chọn ngày khám hợp lệ.</div>
+                </div>
+                <div class="form-group">
+                  <label for="bookingTime">Giờ khám <span class="required">*</span></label>
+                  <select id="bookingTime" class="form-control" required>
+                    <option value="">-- Chọn giờ --</option>
+                    <option value="07:30">07:30 - 08:00</option>
+                    <option value="08:00">08:00 - 08:30</option>
+                    <option value="08:30">08:30 - 09:00</option>
+                    <option value="09:00">09:00 - 09:30</option>
+                    <option value="09:30">09:30 - 10:00</option>
+                    <option value="10:00">10:00 - 10:30</option>
+                    <option value="10:30">10:30 - 11:00</option>
+                    <option value="11:00">11:00 - 11:30</option>
+                    <option value="13:30">13:30 - 14:00</option>
+                    <option value="14:00">14:00 - 14:30</option>
+                    <option value="14:30">14:30 - 15:00</option>
+                    <option value="15:00">15:00 - 15:30</option>
+                    <option value="15:30">15:30 - 16:00</option>
+                  </select>
+                  <div class="form-error">Vui lòng chọn giờ khám.</div>
+                </div>
+              </div>
+
+              <!-- Triệu chứng -->
+              <div class="form-group">
+                <label for="symptoms">Triệu chứng / Lý do khám</label>
+                <textarea id="symptoms" class="form-control" 
+                          placeholder="Mô tả triệu chứng hoặc lý do bạn đến khám..." 
+                          maxlength="2000"></textarea>
+              </div>
+
+              <!-- BHYT -->
+              <div class="checkbox-group">
+                <input type="checkbox" id="isBhyt">
+                <label for="isBhyt">Tôi có Bảo hiểm Y tế (BHYT)</label>
+              </div>
+
+              <!-- Ghi chú -->
+              <div class="form-group">
+                <label for="notes">Ghi chú thêm</label>
+                <textarea id="notes" class="form-control" 
+                          placeholder="Các yêu cầu đặc biệt (nếu có)..." 
+                          maxlength="1000"></textarea>
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" class="btn btn-primary btn-lg submit-btn" id="submitBtn">
+                📅 Đặt Lịch Khám
+              </button>
+
+              <p style="margin-top: 16px; font-size: var(--font-size-xs); color: var(--gray-500); text-align: center;">
+                Bằng cách đặt lịch, bạn đồng ý với việc chúng tôi sử dụng thông tin để liên hệ xác nhận.
+                Thông tin của bạn được bảo mật theo quy định.
+              </p>
+            </form>
+          </div>
+
+          <!-- Success -->
+          <div class="booking-success" id="booking-success">
+            <div class="success-icon">✅</div>
+            <h3>Đặt Lịch Thành Công!</h3>
+            <p style="color: var(--gray-600);">Chúng tôi đã nhận được yêu cầu đặt lịch của bạn. Nhân viên tổng đài sẽ liên hệ xác nhận trong giờ hành chính.</p>
+
+            <dl class="success-details" id="success-details">
+              <dt>Mã đặt lịch</dt>
+              <dd id="success-id">—</dd>
+              <dt>Họ tên</dt>
+              <dd id="success-name">—</dd>
+              <dt>Ngày khám</dt>
+              <dd id="success-date">—</dd>
+              <dt>Giờ khám</dt>
+              <dd id="success-time">—</dd>
+              <dt>Chuyên khoa</dt>
+              <dd id="success-dept">—</dd>
+              <dt>Trạng thái</dt>
+              <dd><span class="badge" style="background: var(--warning-bg); color: var(--gray-800); padding: 4px 12px; border-radius: 100px; font-size: 13px;">Chờ xác nhận</span></dd>
+            </dl>
+
+            <div style="margin-top: 24px;">
+              <p style="color: var(--gray-600); margin-bottom: 12px;">
+                📞 Cần hỗ trợ ngay? Gọi <a href="tel:19001082"><strong>19001082</strong></a>
+              </p>
+              <a href="index.html" class="btn btn-secondary">← Về trang chủ</a>
+              <a href="booking.html" class="btn btn-primary" style="margin-left: 8px;">📅 Đặt lịch mới</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="booking-sidebar">
+          <div class="card">
+            <div class="card-title">📞 Hotline hỗ trợ</div>
+            <ul class="info-list">
+              <li>📞 <a href="tel:19001082"><strong>19001082</strong></a></li>
+              <li>🕐 Thứ 2 – Thứ 7: 8h – 16h</li>
+              <li>📧 <a href="mailto:cskh@timhanoi.vn">cskh@timhanoi.vn</a></li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📍 Cơ sở khám</div>
+            <ul class="info-list">
+              <li>🏥 <strong>Cơ sở 1:</strong><br>92 Trần Hưng Đạo, Cửa Nam, HN</li>
+              <li>🏥 <strong>Cơ sở 2:</strong><br>695 Lạc Long Quân, Tây Hồ, HN</li>
+            </ul>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📋 Lưu ý</div>
+            <ul class="info-list">
+              <li>📅 Đặt trước ít nhất 24h</li>
+              <li>💊 Mang theo BHYT, CMND/CCCD</li>
+              <li>🕐 Đến trước giờ hẹn 15 phút</li>
+              <li>🚨 Cấp cứu: Gọi <a href="tel:115">115</a> hoặc đến thẳng Khoa Cấp cứu</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>🫀 Bệnh viện Tim Hà Nội</h4>
+          <p>Bệnh viện chuyên khoa Tim mạch hạng I, trực thuộc Sở Y tế Hà Nội.</p>
+          <p>📧 <a href="mailto:cskh@timhanoi.vn">cskh@timhanoi.vn</a><br>
+             📞 <a href="tel:19001082">19001082</a></p>
+        </div>
+        <div>
+          <h4>Trang</h4>
+          <p><a href="index.html">Trang chủ</a></p>
+          <p><a href="departments.html">Chuyên khoa</a></p>
+          <p><a href="about.html">Giới thiệu</a></p>
+          <p><a href="contact.html">Liên hệ</a></p>
+        </div>
+        <div>
+          <h4>Dịch vụ</h4>
+          <p><a href="ai-chat.html">Chat AI</a></p>
+          <p><a href="booking.html" class="active">Đặt lịch khám</a></p>
+          <p><a href="contact.html">Gọi hotline</a></p>
+        </div>
+        <div>
+          <h4>Địa chỉ</h4>
+          <p>CS1: 92 Trần Hưng Đạo, Cửa Nam, HN</p>
+          <p>CS2: 695 Lạc Long Quân, Tây Hồ, HN</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2026 Bệnh viện Tim Hà Nội. All rights reserved. | AI-powered by Care Assistant
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      const API_URL = window.AI_API_URL || 'http://localhost:8001';
+      const form = document.getElementById('bookingForm');
+      const submitBtn = document.getElementById('submitBtn');
+
+      // ========================
+      // Set min date for booking
+      // ========================
+      const dateInput = document.getElementById('bookingDate');
+      if (dateInput) {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        dateInput.min = tomorrow.toISOString().split('T')[0];
+
+        // Default: tomorrow
+        dateInput.value = tomorrow.toISOString().split('T')[0];
+      }
+
+      // ========================
+      // Form Validation
+      // ========================
+      function validateField(field) {
+        const errorEl = field.parentElement.querySelector('.form-error');
+        field.classList.remove('error');
+        if (errorEl) errorEl.classList.remove('visible');
+
+        if (field.hasAttribute('required') && !field.value.trim()) {
+          field.classList.add('error');
+          if (errorEl) errorEl.classList.add('visible');
+          return false;
+        }
+
+        if (field.id === 'patientName' && field.value.trim().length < 2) {
+          field.classList.add('error');
+          if (errorEl) errorEl.classList.add('visible');
+          return false;
+        }
+
+        if (field.id === 'patientPhone') {
+          const phone = field.value.trim().replace(/\D/g, '');
+          if (phone.length < 10) {
+            field.classList.add('error');
+            if (errorEl) errorEl.classList.add('visible');
+            return false;
+          }
+        }
+
+        if (field.id === 'patientEmail' && field.value.trim()) {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          if (!emailRegex.test(field.value.trim())) {
+            field.classList.add('error');
+            if (errorEl) errorEl.classList.add('visible');
+            return false;
+          }
+        }
+
+        return true;
+      }
+
+      // Real-time validation on blur
+      document.querySelectorAll('#bookingForm .form-control').forEach(field => {
+        field.addEventListener('blur', () => validateField(field));
+        field.addEventListener('input', () => {
+          if (field.classList.contains('error')) {
+            validateField(field);
+          }
+        });
+      });
+
+      // ========================
+      // Submit
+      // ========================
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        // Validate all required fields
+        const fields = ['patientName', 'patientPhone', 'department', 'bookingDate', 'bookingTime'];
+        let isValid = true;
+
+        fields.forEach(id => {
+          const field = document.getElementById(id);
+          if (!validateField(field)) isValid = false;
+        });
+
+        if (!isValid) {
+          // Scroll to first error
+          const firstError = document.querySelector('.form-control.error');
+          if (firstError) firstError.focus();
+          return;
+        }
+
+        // Disable button & show loading
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Đang xử lý...';
+
+        const departmentSelect = document.getElementById('department');
+        const deptName = departmentSelect.options[departmentSelect.selectedIndex].text;
+
+        try {
+          const response = await fetch(`${API_URL}/api/ai/booking`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              patient_name: document.getElementById('patientName').value.trim(),
+              patient_phone: document.getElementById('patientPhone').value.trim(),
+              patient_email: document.getElementById('patientEmail').value.trim(),
+              department_id: document.getElementById('department').value,
+              booking_date: document.getElementById('bookingDate').value,
+              booking_time: document.getElementById('bookingTime').value,
+              symptoms: document.getElementById('symptoms').value.trim(),
+              notes: document.getElementById('notes').value.trim(),
+              is_bhyt: document.getElementById('isBhyt').checked
+            })
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Show success
+            document.getElementById('booking-form-view').style.display = 'none';
+            const successView = document.getElementById('booking-success');
+            successView.classList.add('visible');
+
+            // Populate success details
+            document.getElementById('success-id').textContent = data.booking_details?.appointment_id || '—';
+            document.getElementById('success-name').textContent = data.booking_details?.patient_name || document.getElementById('patientName').value.trim();
+            document.getElementById('success-date').textContent = data.booking_details?.date || document.getElementById('bookingDate').value;
+            document.getElementById('success-time').textContent = data.booking_details?.time || document.getElementById('bookingTime').value;
+            document.getElementById('success-dept').textContent = deptName;
+          } else {
+            alert(data.message || 'Đặt lịch thất bại. Vui lòng thử lại hoặc gọi Hotline 19001082.');
+          }
+        } catch (error) {
+          console.error('Booking error:', error);
+          alert('Hệ thống đang gặp sự cố. Vui lòng thử lại sau hoặc gọi Hotline 19001082.');
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '📅 Đặt Lịch Khám';
+        }
+      });
+
+    })();
+  </script>
+</body>
+</html>

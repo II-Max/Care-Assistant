@@ -1,15 +1,18 @@
 """
-Document Loader — Load và parse tất cả file dữ liệu từ Data/ hoặc knowledge/approved/.
+Document Loader — Load va parse file tu knowledge/approved/ hoac Data/.
 
-Hỗ trợ:
-- File JSON (.json): parse array of objects với title + content
-- File Markdown (.md): parse heading + body content
-- Expiry detection: tự động bỏ qua tài liệu hết hạn (dựa trên metadata **Hết hạn:**)
+Tinh nang:
+- Load MD + JSON files
+- Manifest-based expiry validation (tu knowledge/approved/manifest.json)
+- Fallback: inline **Het han:** metadata trong content
+- Deduplicate content
+- Uu tien knowledge/approved/
 """
 
 import json
 import re
 import hashlib
+import logging
 from datetime import datetime, date
 from pathlib import Path
 from dataclasses import dataclass, field
@@ -17,10 +20,12 @@ from typing import Optional
 
 from config import settings
 
+logger = logging.getLogger("document_loader")
+
 
 @dataclass
 class Document:
-    """Một tài liệu đã được parse."""
+    """Mot tai lieu da duoc parse."""
     title: str
     content: str
     source_url: str = ""
@@ -29,20 +34,9 @@ class Document:
 
 
 class DocumentLoader:
-    """Load và parse tất cả documents từ Data directory.
-
-    Ưu tiên knowledge/approved/ nếu tồn tại và có nội dung.
-    Tự động bỏ qua tài liệu hết hạn (expiry).
-    """
+    """Load va parse documents. Uu tien knowledge/approved/."""
 
     def __init__(self, data_dir: Optional[str] = None):
-        """Khởi tạo loader.
-
-        Args:
-            data_dir: Nếu truyền vào, dùng thư mục này.
-                      Nếu None, ưu tiên knowledge/approved/ nếu tồn tại và có file .md,
-                      ngược lại dùng settings.DATA_DIR.
-        """
         if data_dir:
             self.data_dir = Path(data_dir)
         else:
@@ -51,16 +45,58 @@ class DocumentLoader:
                 self.data_dir = approved_dir
             else:
                 self.data_dir = Path(settings.DATA_DIR)
+        self._load_manifest()
+
+    def _load_manifest(self):
+        """Load manifest.json tu knowledge/approved/."""
+        self._manifest = {}
+        manifest_path = self.data_dir / "manifest.json"
+        if manifest_path.exists():
+            try:
+                with open(manifest_path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                for doc in data.get("documents", []):
+                    self._manifest[doc["filename"]] = doc
+                logger.info(f"Manifest loaded: {len(self._manifest)} documents")
+            except Exception as e:
+                logger.warning(f"Manifest load failed: {e}")
+
+    def _is_expired(self, file_path: Path, content: str = "") -> bool:
+        """Kiem tra tai lieu het han.
+
+        Checks (theo thu tu uu tien):
+        1. Manifest expires_at
+        2. Inline **Het han:** metadata trong content
+        """
+        manifest_entry = self._manifest.get(file_path.name)
+        if manifest_entry:
+            expires_at = manifest_entry.get("expires_at", "")
+            if expires_at:
+                try:
+                    expiry_date = datetime.strptime(expires_at, "%Y-%m-%d").date()
+                    if expiry_date < date.today():
+                        logger.info(f"Expired (manifest): {file_path.name} -> {expires_at}")
+                        return True
+                    return False
+                except ValueError:
+                    pass
+
+        if content:
+            match = re.search(r"\*\*Het han:\*\*\s*(\d{2}/\d{2}/\d{4})", content)
+            if match:
+                try:
+                    expiry_date = datetime.strptime(match.group(1), "%d/%m/%Y").date()
+                    return expiry_date < date.today()
+                except ValueError:
+                    pass
+
+        return False
 
     @staticmethod
     def _is_supported_markdown(file_path: Path) -> bool:
-        """Ignore scraper artifacts that are not answerable hospital knowledge."""
         name = file_path.name
-        unsupported_prefixes = ("🏷️", "📇", "📊", "📋", "🔗", "🖼️")
-        unsupported_keywords = ("Metadata", "Contacts", "Tables", "Forms", "Links", "Media")
-        if any(name.startswith(p) for p in unsupported_prefixes):
-            return False
-        if any(k in name for k in unsupported_keywords):
+        keywords = ("Metadata", "Contacts", "Tables", "Forms", "Links", "Media")
+        if any(k in name for k in keywords):
             return False
         return True
 
@@ -69,54 +105,34 @@ class DocumentLoader:
         normalized = re.sub(r"\s+", " ", content).strip().lower()
         return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
-    @staticmethod
-    def _is_expired(content: str) -> bool:
-        """Kiểm tra tài liệu có hết hạn dựa trên metadata **Hết hạn:**."""
-        match = re.search(r"\*\*Hết hạn:\*\*\s*(\d{2}/\d{2}/\d{4})", content)
-        if not match:
-            return False  # Không có expiry → valid
-        try:
-            expiry_date = datetime.strptime(match.group(1), "%d/%m/%Y").date()
-            return expiry_date < date.today()
-        except ValueError:
-            return False
-
     def load_all(self) -> list[Document]:
-        """Load tất cả file .md và .json từ data directory.
-
-        Ưu tiên knowledge/approved/ nếu có.
-        Tự động deduplicate và bỏ tài liệu hết hạn.
-        """
         documents = []
 
         if not self.data_dir.exists():
-            print(f"⚠️  Data directory không tồn tại: {self.data_dir}")
+            logger.warning(f"Data directory khong ton tai: {self.data_dir}")
             return documents
 
-        # Load JSON files
         for json_file in self.data_dir.glob("*.json"):
+            if json_file.name == "manifest.json":
+                continue
             docs = self._load_json(json_file)
             documents.extend(docs)
-            print(f"📄 Loaded JSON: {json_file.name} → {len(docs)} documents")
 
-        # Load Markdown files (bỏ qua những file đã có trong JSON)
         json_titles = {doc.title for doc in documents}
         for md_file in sorted(self.data_dir.glob("*.md")):
             if not self._is_supported_markdown(md_file):
                 continue
             docs = self._load_markdown(md_file)
-            # Lọc: bỏ tài liệu hết hạn
             valid_docs = []
             for d in docs:
-                if self._is_expired(d.content):
-                    print(f"⏰ Expired: {d.title} (bỏ qua)")
+                with open(md_file, "r", encoding="utf-8") as f:
+                    full_content = f.read()
+                if self._is_expired(md_file, full_content):
+                    logger.info(f"Expired: {d.title} (bo qua)")
                     continue
                 valid_docs.append(d)
-            # Chỉ thêm nếu chưa có trong JSON
             new_docs = [d for d in valid_docs if d.title not in json_titles]
             documents.extend(new_docs)
-            if new_docs:
-                print(f"📄 Loaded MD: {md_file.name} → {len(new_docs)} documents (expired filtered)")
 
         unique_documents = []
         seen_hashes = set()
@@ -128,86 +144,58 @@ class DocumentLoader:
             doc.metadata["content_hash"] = content_hash
             unique_documents.append(doc)
 
-        print(f"\n✅ Tổng cộng: {len(unique_documents)} documents loaded (từ {self.data_dir.name})")
+        logger.info(f"Loaded {len(unique_documents)} documents from {self.data_dir.name}")
         return unique_documents
 
     def _load_json(self, file_path: Path) -> list[Document]:
-        """Parse JSON file — format: array of {id, title, url, content: []}."""
         documents = []
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-
             if not isinstance(data, list):
                 data = [data]
-
             for item in data:
                 title = item.get("title", "").strip()
                 url = item.get("url", "")
                 content_list = item.get("content", [])
-
                 if not content_list or not title:
                     continue
-
-                # Join content array thành text
-                content_text = "\n".join(
-                    line.strip() for line in content_list if line.strip()
-                )
-
+                content_text = "\n".join(line.strip() for line in content_list if line.strip())
                 if len(content_text) < 10:
                     continue
-
                 documents.append(Document(
-                    title=title,
-                    content=content_text,
-                    source_url=url,
-                    source_file=file_path.name,
+                    title=title, content=content_text,
+                    source_url=url, source_file=file_path.name,
                     metadata={"id": item.get("id", 0)}
                 ))
-
         except Exception as e:
-            print(f"❌ Lỗi parse JSON {file_path.name}: {e}")
-
+            logger.error(f"Parse JSON {file_path.name} failed: {e}")
         return documents
 
     def _load_markdown(self, file_path: Path) -> list[Document]:
-        """Parse Markdown file — extract title từ heading, content từ body."""
         documents = []
         try:
             with open(file_path, "r", encoding="utf-8") as f:
                 content = f.read().strip()
-
             if len(content) < 50:
                 return documents
-
-            # Extract title từ first heading
             title_match = re.match(r"^#\s+(.+)", content)
             title = title_match.group(1).strip() if title_match else file_path.stem
-
-            # Extract source URL từ blockquote
-            url_match = re.search(r"\*\*Nguồn:\*\*\s*(https?://\S+)", content)
+            url_match = re.search(r"(?:🔗\s*URL:\s*|\*\*Nguồn:\*\*\s*)(https?://\S+)", content)
             source_url = url_match.group(1) if url_match else ""
-
-            # Clean up content: bỏ heading đầu, bỏ source blockquote
             body = content
             if title_match:
                 body = body[title_match.end():].strip()
-            body = re.sub(r">\s*\*\*Nguồn:\*\*\s*https?://\S+", "", body).strip()
+            body = re.sub(r">\s*(?:🔗\s*URL:\s*|\*\*Nguồn:\*\*\s*)https?://\S+", "", body).strip()
             body = re.sub(r"^---\s*$", "", body, flags=re.MULTILINE).strip()
-
             if len(body) < 20:
                 return documents
-
             documents.append(Document(
-                title=title,
-                content=body,
-                source_url=source_url,
-                source_file=file_path.name
+                title=title, content=body,
+                source_url=source_url, source_file=file_path.name
             ))
-
         except Exception as e:
-            print(f"❌ Lỗi parse MD {file_path.name}: {e}")
-
+            logger.error(f"Parse MD {file_path.name} failed: {e}")
         return documents
 
 
@@ -215,7 +203,4 @@ if __name__ == "__main__":
     loader = DocumentLoader()
     docs = loader.load_all()
     for doc in docs:
-        print(f"\n📋 {doc.title}")
-        print(f"   URL: {doc.source_url}")
-        print(f"   Length: {len(doc.content)} chars")
-        print(f"   Preview: {doc.content[:100]}...")
+        print(f"  - {doc.title} ({len(doc.content)} chars)")

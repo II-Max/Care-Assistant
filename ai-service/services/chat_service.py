@@ -244,7 +244,7 @@ class ChatService:
                     risk_level="LOW",
                     confidence=0.0,
                     latency_ms=elapsed_ms,
-                    retrieval_count=retrieval_count if 'retrieval_count' in dir() else 0,
+                    retrieval_count=0,
                     error_type=error_type,
                     error_message=error_msg,
                     user_ip_hash=hash_ip(user_ip)
@@ -311,7 +311,7 @@ class ChatService:
                     handoff_required=handoff_required,
                     is_emergency=is_emergency_result,
                     latency_ms=elapsed_ms,
-                    chunks_used=retrieval_count if 'retrieval_count' in dir() else 0
+                    chunks_used=retrieval_count
                 ).to_dict())
 
                 # Cập nhật conversation (dùng timestamp thay vì Increment)
@@ -330,7 +330,7 @@ class ChatService:
                     risk_level=risk_level,
                     confidence=max_score,
                     latency_ms=elapsed_ms,
-                    retrieval_count=retrieval_count if 'retrieval_count' in dir() else 0,
+                    retrieval_count=retrieval_count,
                     emergency_triggered=is_emergency_result,
                     user_ip_hash=hash_ip(user_ip)
                 ).to_dict())
@@ -339,9 +339,14 @@ class ChatService:
                 logger.warning(f"⚠️ Firebase log failed (non-critical): {fb_err}")
                 # Không crash service — log là non-critical
 
+        # Convert source dicts to Source objects
+        source_objects = []
+        for src in sources:
+            source_objects.append(Source(title=src["title"], url=src["url"]))
+
         return ChatResponse(
             reply=reply,
-            sources=[Source(title=s["title"], url=s["url"]) for s in sources],
+            sources=source_objects,
             is_emergency=is_emergency_result,
             confidence=max_score,
             risk_level=risk_level,

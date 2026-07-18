@@ -38,6 +38,9 @@ serviceAccountKey.json
 .firebase/
 .firebaserc
 
+# ChromaDB persistent index
+chroma_db/
+
 # Virtual Environments
 venv/
 .venv/

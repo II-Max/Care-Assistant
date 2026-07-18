@@ -35,6 +35,7 @@ class Conversation:
 
     def to_dict(self) -> dict:
         return {
+            "conversation_id": self.conversation_id,
             "user_id": self.user_id,
             "user_ip": self.user_ip[:100],
             "device_info": self.device_info[:100],

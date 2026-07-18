@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "last_updated": "2026-07-18",
+  "hospital": "Bệnh viện Tim Hà Nội",
+  "documents": [
+    {
+      "filename": "gioi-thieu-benh-vien.md",
+      "title": "Giới thiệu Bệnh viện Tim Hà Nội",
+      "owner": "Phòng Truyền thông",
+      "approved_by": "Ban Giám đốc",
+      "approved_at": "2026-01-15",
+      "expires_at": "2027-01-15",
+      "category": "general_info",
+      "tags": ["gioi-thieu", "benh-vien", "tim-mach"],
+      "source_url": "https://benhvientimhanoi.vn/vn/cong/thong-tin/gioi-thieu-chung",
+      "checksum": ""
+    },
+    {
+      "filename": "dich-vu-kham-chua-benh.md",
+      "title": "Dịch vụ Khám & Chữa bệnh",
+      "owner": "Phòng Kế hoạch Tổng hợp",
+      "approved_by": "Ban Giám đốc",
+      "approved_at": "2026-02-20",
+      "expires_at": "2027-02-20",
+      "category": "service_info",
+      "tags": ["dich-vu", "kham-benh", "chua-benh", "hy-t", "bao-hiem"],
+      "source_url": "https://benhvientimhanoi.vn/vn/cong/thong-tin/dich-vu-kham-chua-benh",
+      "checksum": ""
+    },
+    {
+      "filename": "lien-he-dat-lich.md",
+      "title": "Liên hệ & Thông tin Hỗ trợ",
+      "owner": "Tổng đài CSKH",
+      "approved_by": "Ban Giám đốc",
+      "approved_at": "2026-03-10",
+      "expires_at": "2027-03-10",
+      "category": "contact_info",
+      "tags": ["lien-he", "dat-lich", "ho-tro", "cskh"],
+      "source_url": "https://benhvientimhanoi.vn/vn/cong/thong-tin/huong-dan-lien-he-dat-lich",
+      "checksum": ""
+    }
+  ],
+  "review_schedule": {
+    "frequency": "quarterly",
+    "next_review": "2026-10-15",
+    "reviewers": ["Phòng Truyền thông", "Phòng Kế hoạch Tổng hợp", "Tổng đài CSKH"]
+  }
+}

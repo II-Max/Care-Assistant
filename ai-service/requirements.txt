@@ -7,5 +7,19 @@ pydantic>=2.0.0
 python-dotenv>=1.0.0
 # Embedding fallback (optional — chỉ cần nếu NVIDIA API không available)
 sentence-transformers>=2.2.0
+# Phase 2: Persistent vector store
+chromadb>=1.5.0
+# Phase 2: BM25 sparse search
+rank-bm25>=0.2.0
+# Phase 2: Cross-encoder reranker (optional, CPU-friendly)
+# cross-encoder/ms-marco-MiniLM-L-6-v2 tu dong download khi su dung
 # Firebase (optional — chỉ cần nếu dùng Firebase)
 firebase-admin>=6.0.0
+# Phase 3: PostgreSQL
+asyncpg>=0.29.0
+# Phase 3: Redis (notification queue, rate limiting shared)
+redis>=5.0.0
+# Phase 3: Background tasks
+huey>=2.5.0
+# Phase 3: HTTP client for HIS adapter
+httpx>=0.25.0
