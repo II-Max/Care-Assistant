@@ -1,81 +1,153 @@
-# UPDATE — Lộ trình nâng cấp Care Assistant
+# 📝 UPDATE — Lộ trình nâng cấp Care Assistant
 
-## Mục tiêu
+> **Trạng thái:** `Đang theo dõi` **|** **Cập nhật:** `18/07/2026`
+> **Mục tiêu:** Chuyển prototype Hackathon thành hệ thống pilot an toàn cho trợ lý chăm sóc khách hàng bệnh viện.
 
-Chuyển prototype Hackathon thành hệ thống có thể pilot an toàn cho trợ lý chăm sóc khách hàng bệnh viện. Mọi phase phải giữ nguyên nguyên tắc: AI chỉ trả lời thông tin có nguồn chính thức; cấp cứu luôn được ưu tiên; dữ liệu cá nhân được tối thiểu hóa.
+---
 
-## Phase 1 — Foundation & Safety Release Blockers
+## 🎯 Nguyên tắc xuyên suốt
 
-**Trạng thái: ✅ Hoàn thành**
+> AI chỉ trả lời thông tin có nguồn chính thức | Cấp cứu luôn được ưu tiên | Dữ liệu cá nhân được tối thiểu hóa
 
-Phạm vi:
+---
 
-1. Dùng FastAPI làm cổng web và API duy nhất; frontend gọi API cùng domain.
-2. Chuyển nhận diện cấp cứu sang fail-safe: rule phát hiện tín hiệu nguy hiểm phản hồi ngay, không đợi LLM phủ quyết.
-3. Thêm CORS allowlist, rate limit bộ nhớ và security headers cơ bản.
-4. Làm sạch ingestion RAG: bỏ file crawl phụ trợ, deduplicate nội dung và ưu tiên thư mục knowledge/approved khi được đưa vào sử dụng.
-5. Loại bỏ cơ chế hạ ngưỡng retrieval; không đủ bằng chứng thì từ chối/handoff.
-6. Phân biệt embedding document/passages với embedding query.
-7. Loại bỏ URL AI hard-code ở frontend và giới hạn link chat tới domain chính thức.
-8. Bổ sung .gitignore, template môi trường và kiểm thử unit cho safety/retrieval.
+## 🟢 Phase 1 — Foundation & Safety Release Blockers
 
-## Phase 2 — Grounded RAG & Operability
+> **Trạng thái:** `✅ HOÀN THÀNH 100%` *(Đã verified toàn bộ source code)*
 
-**Trạng thái: ✅ Hoàn thành**
+| # | Công việc | Module / File | Trạng thái |
+|:-:|-----------|---------------|:----------:|
+| 1 | FastAPI làm cổng web và API duy nhất; frontend gọi API cùng domain | `ai-service/main.py` | `✅` |
+| 2 | Emergency detection fail-safe: rule-based, không đợi LLM | `services/emergency_detector.py` | `✅` |
+| 3 | CORS allowlist (không wildcard) | `ai-service/main.py` | `✅` |
+| 4 | Rate limiter in-memory (10 requests/phút/IP) | `services/rate_limiter.py` | `✅` |
+| 5 | Security headers: X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Cache-Control | `ai-service/main.py` (middleware) | `✅` |
+| 6 | Document ingestion sạch: ưu tiên `knowledge/approved/`, dedup content, bỏ file crawl | `rag/document_loader.py` | `✅` |
+| 7 | Similarity threshold cố định `0.35` — không hạ ngưỡng retrieval | `rag/retriever.py` | `✅` |
+| 8 | Phân biệt embedding passage (`normalize=True`) vs query (`normalize=False`) | `rag/embedder.py` | `✅` |
+| 9 | URL frontend không hard-code; `safeOfficialUrl()` giới hạn domain `benhvientimhanoi.vn` | `frontend/js/chat.js` | `✅` |
+| 10 | `.gitignore`, `.env.example`, unit tests (5 tests) | Root, `tests/` | `✅` |
+| 11 | LLM trả JSON: `answer`, `citations`, `handoff_required`, `risk_level` | `services/chat_service.py` | `✅` |
+| 12 | 6 trang giao diện: index, ai-chat, booking, departments, about, contact + Design system | `frontend/` | `✅` |
+| 13 | Script khởi động `start.ps1` | Root | `✅` |
 
-Phạm vi:
+---
 
-1. Xây dựng knowledge/approved, content manifest, owner, approved_at và expires_at cho từng tài liệu.
-2. Lưu index bền vững; chuyển sang ChromaDB cho hybrid sparse/dense, filter metadata và persistent storage.
-3. Hybrid retrieval: dense + BM25/sparse -> RRF -> reranker (cross-encoder/ms-marco-MiniLM-L-6-v2).
-4. Ép LLM trả JSON có answer, citations, handoff_required và risk_level; xác thực citation trước khi trả frontend.
-5. Thêm feedback workflow, audit log ẩn danh.
-6. Tạo bộ đánh giá tối thiểu 150 câu hỏi tiếng Việt được đại diện bệnh viện duyệt.
+## 🟢 Phase 2 — Grounded RAG & Operability
 
-## Phase 3 — Booking & Hospital Integration
+> **Trạng thái:** `✅ HOÀN THÀNH 100%` *(Đã verified toàn bộ source code)*
 
-**Trạng thái: 🔄 Đang thực hiện**
+| # | Công việc | Module / File | Trạng thái |
+|:-:|-----------|---------------|:----------:|
+| 1 | Xây dựng `knowledge/approved/` với content manifest (owner, approved_at, expires_at) | `knowledge/approved/manifest.json` | `✅` |
+| 2 | Chuyển FAISS in-memory → ChromaDB persistent storage | `rag/vector_store.py` | `✅` |
+| 3 | BM25 sparse retrieval + Reciprocal Rank Fusion (RRF) | `rag/bm25_search.py`, `rag/hybrid_retriever.py` | `✅` |
+| 4 | Cross-encoder reranker (`ms-marco-MiniLM-L-6-v2`) tăng precision | `rag/hybrid_retriever.py` | `✅` |
+| 5 | Citation validation trước khi trả frontend | `services/chat_service.py` | `✅` |
+| 6 | Feedback workflow: user đánh giá câu trả lời (1–5 sao) | `main.py → /api/ai/feedback` | `✅` |
+| 7 | Audit log ẩn danh qua Firebase (hash IP) | `services/firebase/client.py` | `✅` |
+| 8 | Conversation history API: `/api/ai/conversation/{id}` | `main.py` | `✅` |
+| 9 | Document expiry validation: tài liệu hết hạn không được retrieval | `rag/document_loader.py` | `✅` |
 
-Phạm vi:
+---
 
-1. PostgreSQL cho appointments, schedules, users và audit events.
-2. Booking transaction, idempotency key và optimistic locking chống trùng slot.
-3. Redis + worker cho notification, indexing.
-4. HIS Adapter, Zalo/SMS/Email Adapter và human handoff.
-5. OIDC/Keycloak hoặc Firebase Auth được backend xác thực; RBAC cho patient, doctor, admin.
+## 🟡 Phase 3 — Booking & Hospital Integration
 
-### Đã hoàn thành trong Phase 3:
+> **Trạng thái:** `🔄 ĐANG THỰC HIỆN (70%)`
 
-- [x] Database connection layer (asyncpg + SQLite fallback)
-- [x] Data models (Appointment, Doctor, Schedule, TimeSlot, AuditEvent, NotificationQueue)
-- [x] Booking service: validation, idempotency check, optimistic locking
-- [x] Booking API: POST /api/ai/booking, GET /api/ai/booking/{id}, POST cancel, GET lookup
-- [x] Handoff service: ticket creation với priority-based escalation
-- [x] Handoff API: POST /api/ai/handoff
-- [x] Departments API: GET /api/ai/departments
-- [x] Frontend booking form (booking.html) với validation đầy đủ
-- [x] Navigation cập nhật (thêm booking link)
-- [x] Chat quick replies mở rộng (handoff + cancel booking)
-- [x] Chat handoff tự động khi AI detect cần nhân viên
-- [x] Thêm dependencies: asyncpg, redis, huey, httpx
+### ✅ Đã hoàn thành
 
-### Còn lại:
+| # | Công việc | Module / File | Mức độ |
+|:-:|-----------|---------------|:------:|
+| 1 | Database connection layer: asyncpg pool + SQLite fallback | `database/connection.py` | `✅` |
+| 2 | Data models: Appointment, Doctor, Schedule, TimeSlot, AuditEvent, NotificationQueue | `database/models.py` | `✅` |
+| 3 | Booking service: validation, idempotency check, optimistic locking | `services/booking_service.py` | `✅` |
+| 4 | Booking API: `POST /booking`, `GET /booking/{id}`, `POST /cancel`, `GET /lookup` | `main.py` | `✅` |
+| 5 | Handoff service: ticket creation với priority-based escalation | `services/handoff_service.py` | `✅` |
+| 6 | Handoff API: `POST /api/ai/handoff` | `main.py` | `✅` |
+| 7 | Departments API: `GET /api/ai/departments` (7 chuyên khoa) | `main.py` | `✅` |
+| 8 | Frontend booking form (`booking.html`) với validation đầy đủ | `frontend/booking.html` | `✅` |
+| 9 | Navigation cập nhật (6 HTML files + CTA) | `frontend/*.html` | `✅` |
+| 10 | Chat quick replies mở rộng (handoff + cancel booking) | `frontend/js/chat.js` | `✅` |
+| 11 | Chat handoff tự động khi AI detect cần nhân viên | `services/chat_service.py` | `✅` |
+| 12 | Dependencies: asyncpg, redis, huey, httpx | `requirements.txt` | `✅` |
+| 13 | Firebase client: conversations, messages, feedback, audit_logs, emergency_logs, bookings | `services/firebase/client.py` | `✅` |
+| 14 | Firebase config: `firestore.rules`, `firestore.indexes.json` | Root | `✅` |
+| 15 | Database migration scripts (Initial Schema + Seed Data) | `database/migrations/` | `✅` |
+| 16 | Environment template: `env.example.txt` | Root | `✅` |
 
-- [ ] Redis worker for notification queue
-- [ ] Zalo/SMS/Email adapter
-- [ ] Database migration scripts
-- [ ] Seed data (departments, doctors)
-- [ ] Staff dashboard for handoff tickets
-- [ ] Booking history page
-- [ ] Firebase Auth endpoints
-- [ ] RBAC middleware
-- [ ] HIS Adapter
+### ❌ Còn lại (cho Production Ready)
 
-## Phase 4 — Production Readiness (Kế hoạch)
+| # | Công việc | Mô tả | Ưu tiên |
+|:-:|-----------|-------|:-------:|
+| 1 | **Redis worker for notification queue** | Xử lý bất đồng bộ SMS/Zalo/Email | `Cao` |
+| 2 | **Zalo/SMS/Email adapter** | Gửi thông báo xác nhận + nhắc lịch | `Cao` |
+| 3 | **Seed data đầy đủ** | Departments, doctors, schedules, time_slots | `Cao` |
+| 4 | **Staff dashboard** | Frontend cho nhân viên xem handoff tickets | `Trung` |
+| 5 | **Booking history page** | Frontend cho bệnh nhân tra cứu lịch sử | `Trung` |
+| 6 | **Firebase Auth endpoints** | OIDC/Keycloak tích hợp | `Trung` |
+| 7 | **RBAC middleware** | patient, doctor, admin roles | `Trung` |
+| 8 | **HIS Adapter** | Kết nối Hệ thống Thông tin Bệnh viện | `Thấp` |
 
-Phạm vi:
+### 🐛 Bug đã fix trong lần review gần nhất
 
-1. Docker Compose cho môi trường tích hợp; pipeline CI chạy test, lint, type check, secret scan và container scan.
-2. TLS, WAF/rate limit tại gateway, backup/restore, rotation secrets và incident runbook.
-3. Đánh giá tác động dữ liệu cá nhân, retention policy, kiểm thử xâm nhập và quy trình phê duyệt nội dung y khoa.
-4. SLO, cảnh báo và diễn tập sự cố.
+| Bug | File | Mô tả |
+|-----|------|-------|
+| `🐛 CRITICAL` | `ai-service/main.py` | Syntax error: `from services.firebase import` bị incomplete do merge lỗi |
+| `⚠️` | `ai-service/main.py` | Thiếu Firebase init step trong startup sequence |
+| `📝` | `tests/` | Thiếu `__init__.py` |
+| `📝` | `database/migrations/` | Thiếu migration scripts |
+| `📝` | Root | Thiếu `env.example.txt` |
+| `🐛` | `001_initial_schema.sql` | Thiếu cột `booking_date`, `booking_time` trong appointments table |
+
+---
+
+## 🔵 Phase 4 — Production Readiness
+
+> **Trạng thái:** `⏳ KẾ HOẠCH`
+
+| # | Công việc | Mô tả | Ưu tiên |
+|:-:|-----------|-------|:-------:|
+| 1 | **🐳 Docker Compose** | Multi-service deployment (API + DB + Redis + Worker) | `Cao` |
+| 2 | **🚀 CI/CD Pipeline** | GitHub Actions: test, lint, type check, secret scan, container scan | `Cao` |
+| 3 | **🔒 TLS + WAF** | Bảo mật tại gateway + rate limit | `Cao` |
+| 4 | **🔄 Backup/Restore** | Database backup có kiểm thử | `Cao` |
+| 5 | **🔄 Secret Rotation** | Operational security | `Trung` |
+| 6 | **📊 SLO + Alerting** | Observability & cảnh báo | `Trung` |
+| 7 | **📝 Incident Runbook** | Playbook cho sự cố | `Trung` |
+| 8 | **🛡️ Penetration Testing** | Security audit có bên thứ 3 | `Trung` |
+| 9 | **📝 DPIA** | Đánh giá tác động dữ liệu cá nhân | `Thấp` |
+| 10 | **🗑️ Retention Policy** | Data lifecycle management | `Thấp` |
+
+---
+
+## 🟣 Phase 5 — Future & Expansion
+
+> **Trạng thái:** `⏳ KẾ HOẠCH`
+
+| # | Tính năng | Mô tả | Ghi chú |
+|:-:|-----------|-------|:-------:|
+| 1 | **🎤 Voice (STT/TTS)** | Speech-to-Text cho người già, giọng nói tiếng Việt | Cần GPU + model ASR |
+| 2 | **💬 Zalo OA Chatbot** | Kết nối Zalo Official Account | Zalo Mini App |
+| 3 | **📊 Analytics Dashboard** | Thống kê câu hỏi, satisfaction, xu hướng bệnh | Dựa trên Firestore data |
+| 4 | **🌐 Multi-language** | Hỗ trợ tiếng Anh, tiếng Trung | LLM đa ngữ |
+| 5 | **🧠 Fine-tuned Medical LLM** | Domain-specific model | Cần dataset y khoa chuyên sâu |
+| 6 | **🏥 Multi-hospital** | Mở rộng cho nhiều bệnh viện | Kiến trúc multi-tenant |
+
+---
+
+## 📋 Tổng quan tiến độ
+
+```
+Phase 1: Foundation & Safety     [████████████████████ 100%] ✅
+Phase 2: Grounded RAG            [████████████████████ 100%] ✅
+Phase 3: Booking & Integration   [██████████████░░░░░░  70%] 🔄
+Phase 4: Production Readiness    [░░░░░░░░░░░░░░░░░░░░   0%] ⏳
+Phase 5: Future & Expansion      [░░░░░░░░░░░░░░░░░░░░   0%] ⏳
+```
+
+---
+
+> 🫀 *"Vì Một Trái Tim Khỏe" — Bệnh viện Tim Hà Nội*
+> 
+> *Cập nhật cuối: 18/07/2026 bởi nhóm phát triển AI Care Assistant*

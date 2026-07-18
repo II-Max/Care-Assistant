@@ -135,8 +135,18 @@ async def lifespan(app: FastAPI):
             except Exception as db_err:
                 print(f"   ⚠️  Database init: {db_err}")
 
-            # Step 5: Initialize services
-            print("\n🔧 Step 5: Initializing services...")
+            # Step 4b: Initialize Firebase (for logging, booking fallback)
+            print("\n☁️  Step 4b: Initializing Firebase...")
+            try:
+                from services.firebase import firebase_client
+                firebase_client.initialize()
+                if firebase_client.is_ready:
+                    print("   ✅ Firebase ready")
+                else:
+                    print("   ⚠️  Firebase not configured (offline mode)")
+            except Exception as fb_err:
+                print(f"   ⚠️  Firebase init: {fb_err}")
+
             emergency_detector.initialize()
             chat_service.initialize()
 
