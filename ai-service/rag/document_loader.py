@@ -36,13 +36,21 @@ class DocumentLoader:
     """
 
     def __init__(self, data_dir: Optional[str] = None):
-        requested_dir = Path(data_dir or settings.DATA_DIR)
-        approved_dir = Path(settings.KNOWLEDGE_APPROVED_DIR)
-        self.data_dir = (
-            approved_dir
-            if not data_dir and approved_dir.exists() and any(approved_dir.iterdir())
-            else requested_dir
-        )
+        """Khởi tạo loader.
+
+        Args:
+            data_dir: Nếu truyền vào, dùng thư mục này.
+                      Nếu None, ưu tiên knowledge/approved/ nếu tồn tại và có file .md,
+                      ngược lại dùng settings.DATA_DIR.
+        """
+        if data_dir:
+            self.data_dir = Path(data_dir)
+        else:
+            approved_dir = Path(settings.KNOWLEDGE_APPROVED_DIR)
+            if approved_dir.exists() and list(approved_dir.glob("*.md")):
+                self.data_dir = approved_dir
+            else:
+                self.data_dir = Path(settings.DATA_DIR)
 
     @staticmethod
     def _is_supported_markdown(file_path: Path) -> bool:

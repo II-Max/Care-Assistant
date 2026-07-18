@@ -26,6 +26,17 @@ MANIFEST
 # Environment variables
 .env
 .env.local
+*.example
+
+# Firebase credentials — KHÔNG BAO GIỜ commit file key
+firebase-credentials/
+serviceAccountKey.json
+*.p12
+*.pem
+
+# Firebase cache
+.firebase/
+.firebaserc
 
 # Virtual Environments
 venv/

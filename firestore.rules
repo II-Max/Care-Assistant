@@ -1,0 +1,106 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // Conversations — Chỉ Admin SDK mới được ghi
+    // ==========================================
+    match /conversations/{conversationId} {
+      // Admin SDK (backend) có full access
+      allow read, write: if request.auth != null 
+                         && request.auth.token.role in ['admin', 'doctor'];
+      
+      // Người dùng chỉ đọc được conversation của chính họ
+      allow read: if request.auth != null 
+                  && request.auth.uid == resource.data.user_id;
+      
+      // Admin đọc tất cả (cho phân tích)
+      allow read: if request.auth != null 
+                  && request.auth.token.role == 'admin';
+      
+      // Messages subcollection
+      match /messages/{messageId} {
+        allow read: if request.auth != null 
+                    && (request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.user_id
+                        || request.auth.token.role in ['admin', 'doctor']);
+        allow write: if request.auth != null 
+                     && request.auth.token.role in ['admin', 'doctor'];
+      }
+    }
+
+    // ==========================================
+    // Feedback — Người dùng tạo, Admin đọc
+    // ==========================================
+    match /feedback/{feedbackId} {
+      // Người dùng tạo feedback (rate limit: 1/conversation)
+      allow create: if request.auth != null;
+      
+      // Admin đọc tất cả
+      allow read: if request.auth != null 
+                  && request.auth.token.role == 'admin';
+      
+      // Chỉ Admin mới được xóa
+      allow delete: if request.auth != null 
+                    && request.auth.token.role == 'admin';
+    }
+
+    // ==========================================
+    // Audit Logs — Chỉ Admin SDK ghi, Admin đọc
+    // ==========================================
+    match /audit_logs/{logId} {
+      allow create: if request.auth != null 
+                    && request.auth.token.role in ['admin', 'doctor'];
+      allow read: if request.auth != null 
+                  && request.auth.token.role == 'admin';
+      allow delete: if false;  // Không cho xóa — retention policy
+    }
+
+    // ==========================================
+    // Emergency Logs — Admin SDK ghi, Admin review
+    // ==========================================
+    match /emergency_logs/{logId} {
+      allow create: if request.auth != null 
+                    && request.auth.token.role in ['admin', 'doctor'];
+      allow read: if request.auth != null 
+                  && request.auth.token.role == 'admin';
+    }
+
+    // ==========================================
+    // Users — Người dùng tự quản lý profile
+    // ==========================================
+    match /users/{userId} {
+      allow read, write: if request.auth != null 
+                         && request.auth.uid == userId;
+      allow read: if request.auth != null 
+                  && request.auth.token.role == 'admin';
+      // Admin không được ghi user data
+      allow write: if false;
+    }
+
+    // ==========================================
+    // Bookings (Phase 3) — Người dùng + Admin
+    // ==========================================
+    match /bookings/{bookingId} {
+      // Người dùng tạo booking
+      allow create: if request.auth != null;
+      
+      // Người dùng xem booking của họ, Admin xem tất cả
+      allow read: if request.auth != null 
+                  && (request.auth.uid == resource.data.user_id 
+                      || request.auth.token.role in ['admin', 'doctor']);
+      
+      // Admin cập nhật trạng thái booking
+      allow update: if request.auth != null 
+                    && request.auth.token.role in ['admin', 'doctor'];
+      
+      allow delete: if false;  // Soft delete qua status
+    }
+
+    // ==========================================
+    // Deny all other access
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

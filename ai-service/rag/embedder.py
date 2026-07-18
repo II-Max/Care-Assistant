@@ -23,19 +23,24 @@ class Embedder:
 
     def initialize(self):
         """Khởi tạo embedding client."""
-        try:
-            self.client = OpenAI(
-                api_key=settings.NVIDIA_API_KEY,
-                base_url=settings.NVIDIA_BASE_URL
-            )
-            # Test với một câu ngắn
-            test_result = self._embed_nvidia(["test"])
-            self.dimension = len(test_result[0])
-            print(f"✅ NVIDIA Embedding ready: model={self.model}, dim={self.dimension}")
-        except Exception as e:
-            print(f"⚠️  NVIDIA Embedding failed: {e}")
-            print("🔄 Falling back to local sentence-transformers...")
-            self._init_fallback()
+        # Thử NVIDIA API nếu có key
+        if settings.NVIDIA_API_KEY:
+            try:
+                self.client = OpenAI(
+                    api_key=settings.NVIDIA_API_KEY,
+                    base_url=settings.NVIDIA_BASE_URL
+                )
+                test_result = self._embed_nvidia(["test"])
+                self.dimension = len(test_result[0])
+                print(f"✅ NVIDIA Embedding ready: model={self.model}, dim={self.dimension}")
+                return
+            except Exception as e:
+                print(f"⚠️  NVIDIA Embedding failed: {e}")
+                self.client = None
+
+        # Fallback: sentence-transformers
+        print("🔄 Falling back to local sentence-transformers...")
+        self._init_fallback()
 
     def _init_fallback(self):
         """Khởi tạo fallback embedding model local."""
