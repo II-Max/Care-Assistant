@@ -1,50 +1,139 @@
 # 🏥 AI Customer Care Assistant — Bệnh viện Tim Hà Nội
-Dự án Hackathon 24h: Phát triển Trợ lý AI y tế thông minh, tích hợp trực tiếp vào hệ thống web của Bệnh viện Tim Hà Nội, hỗ trợ giải đáp tự động các thông tin về dịch vụ, đặt lịch khám và phát hiện tình huống cấp cứu.
+
+> **Trạng thái:** `Phase 1 ✅ HOÀN THÀNH` → `Phase 2 🔄 ĐANG THỰC HIỆN`
+> **Cập nhật lần cuối:** 18/07/2026
 
 ---
 
-## 🌟 Tính năng MVP
-1. **RAG-based AI Chatbot**: Giải đáp tự động thông tin từ Knowledge Base (thông tin khoa, hướng dẫn đặt khám, bảo hiểm y tế).
-2. **Emergency Detection**: Nhận diện triệu chứng khẩn cấp y tế tim mạch (đau ngực dữ dội, khó thở, ngất xỉu) và phản hồi khẩn cấp ngay lập tức với Hotline 115 và địa chỉ bệnh viện.
-3. **Trustworthy Guardrails**: AI được chỉ thị tuyệt đối KHÔNG đưa ra lời khuyên y tế hay chẩn đoán bệnh.
-4. **Professional UI**: Giao diện website phong cách y tế, sạch sẽ, tin cậy.
+## 📖 Giới thiệu
+
+**AI Customer Care Assistant** là trợ lý chăm sóc khách hàng thông minh dành cho **Bệnh viện Tim Hà Nội** — bệnh viện chuyên khoa tim mạch hạng I, tuyến cuối của cả nước.
+
+Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải phóng nhân viên tổng đài khỏi các câu hỏi lặp lại, hỗ trợ bệnh nhân **24/7**, và **phát hiện tình huống cấp cứu tim mạch trong 1ms** — không đợi AI sinh text chậm.
 
 ---
 
-## 🛠 Kiến trúc hệ thống
-Hệ thống gồm 3 thành phần chính:
-- `frontend/`: Giao diện web tĩnh (HTML/CSS/JS) với Floating Chat Widget hiện đại.
-- `backend/`: Flask server chạy trên `port 5000` (đóng vai trò static server và proxy request).
-- `ai-service/`: FastAPI server chạy trên `port 8001` xử lý RAG pipeline, Embedding (FAISS) và gọi LLM (NVIDIA NIM).
+## 🌟 Tính năng chính
+
+### ✅ Hiện tại (Phase 1)
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **💬 RAG AI Chatbot** | Trả lời tự động từ Knowledge Base chính thức của bệnh viện |
+| **🚨 Emergency Detection** | Phát hiện từ khóa cấp cứu (đau ngực, khó thở, ngất xỉu) → phản hồi ngay lập tức |
+| **🛡️ Trustworthy Guardrails** | AI KHÔNG chẩn đoán, không tư vấn y khoa, không hallucination |
+| **📚 Citation bắt buộc** | Mọi câu trả lời đều có nguồn trích dẫn rõ ràng |
+| **🏥 Website y tế** | 5 trang: Trang chủ, Chat AI, Chuyên khoa, Giới thiệu, Liên hệ |
+| **🎨 Design system** | Giao diện chuyên nghiệp, mobile-first, WCAG 2.1 AA |
+
+### 🔄 Đang phát triển (Phase 2)
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **Persistent Vector Store** | ChromaDB — không mất index sau restart |
+| **Hybrid Search** | BM25 + Dense → RRF → Cross-encoder reranker |
+| **Citation Validation** | Xác thực từng citation trước khi trả response |
+| **Feedback Workflow** | User đánh giá câu trả lời của AI |
+| **Monitoring** | OpenTelemetry + Prometheus + Grafana |
+| **150 câu hỏi test** | Evaluation suite cho tiếng Việt |
+
+### ⏳ Kế hoạch tương lai (Phase 3+)
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| Đặt lịch khám thực tế | PostgreSQL + Redis |
+| HIS Integration | Kết nối hệ thống thông tin bệnh viện |
+| Auth & RBAC | OIDC/Keycloak |
+| Docker + CI/CD | Production deployment |
 
 ---
 
-## 🚀 Hướng dẫn cài đặt & Chạy
+## 🛠 Công nghệ
+
+| Layer | Công nghệ | Trạng thái |
+|-------|-----------|------------|
+| **Backend** | FastAPI (Python 3.10+) | ✅ Phase 1 |
+| **Frontend** | Vanilla HTML/CSS/JS | ✅ Phase 1 |
+| **LLM** | meta/llama-3.1-70b-instruct (NVIDIA NIM) | ✅ Phase 1 |
+| **Embedding** | nv-embedqa-e5-v5 (NVIDIA NIM) | ✅ Phase 1 |
+| **Vector Store** | FAISS (Phase 1) → ChromaDB (Phase 2) | ⚡ Đang nâng cấp |
+| **Search** | Dense (Phase 1) → Hybrid (Phase 2) | ⚡ Đang nâng cấp |
+| **Monitoring** | OpenTelemetry + Prometheus | 🔄 Phase 2 |
+
+---
+
+## 🚀 Hướng dẫn cài đặt & chạy
 
 ### 1. Yêu cầu
-- Python 3.9+
-- NVIDIA NIM API Key (để sử dụng model `meta/llama-3.1-70b-instruct`)
+- Python 3.10+
+- NVIDIA NIM API Key
 
 ### 2. Cấu hình
-Copy file biến môi trường và điền API key:
 ```bash
 cp .env.example .env
 ```
-Mở file `.env` và thêm:
+Mở `.env` và thêm:
 ```
 NVIDIA_API_KEY=nvapi-xxxxxxxxxxxxx
 ```
 
-### 3. Khởi động nhanh (Windows)
-Chạy script PowerShell sau để tự động cài dependencies và khởi động cả 2 server:
+### 3. Khởi động
 ```powershell
 .\start.ps1
 ```
 
 ### 4. Truy cập
-- **Website Bệnh viện:** `http://localhost:5000`
-- **AI Chatbot Full Page:** `http://localhost:5000/ai-chat.html`
-- **FastAPI Docs:** `http://localhost:8001/docs`
+- **Website:** `http://localhost:8001` (FastAPI serve cả API + static)
+- **API Docs:** `http://localhost:8001/docs`
 
 ---
-*Dự án phát triển cho mục đích Hackathon.*
+
+## 📁 Cấu trúc project
+
+```
+├── ai-service/              # 🚀 Backend (FastAPI)
+│   ├── main.py             # Entry point
+│   ├── config.py           # Settings
+│   ├── models/             # Pydantic schemas
+│   ├── rag/                # RAG pipeline
+│   │   ├── document_loader.py
+│   │   ├── chunker.py
+│   │   ├── embedder.py
+│   │   ├── vector_store.py
+│   │   └── retriever.py
+│   └── services/           # Business logic
+│       ├── emergency_detector.py
+│       ├── chat_service.py
+│       └── rate_limiter.py
+├── frontend/               # 🎨 Giao diện
+│   ├── index.html, ai-chat.html
+│   ├── departments.html, contact.html, about.html
+│   ├── css/hospital-design.css
+│   └── js/chat.js, app.js
+├── knowledge/
+│   └── approved/           # 📚 Knowledge Base chính thức
+│       ├── gioi-thieu-benh-vien.md
+│       ├── dich-vu-kham-chua-benh.md
+│       └── lien-he-dat-lich.md
+├── Data/                   # Raw data (archive)
+├── tests/                  # 🧪 Unit tests
+├── plans/                  # 📋 Kế hoạch phát triển
+│   ├── roadmap.md          # Lộ trình tổng thể
+│   ├── phase2-progress.md  # Theo dõi Phase 2
+│   └── architecture-ai.md  # Kiến trúc hệ thống
+├── start.ps1               # 🚀 Khởi động
+├── UPDATE.md               # Lộ trình nâng cấp
+└── README.md
+```
+
+## 📚 Tài liệu tham khảo
+- [📋 Roadmap phát triển](./plans/roadmap.md)
+- [🔄 Tiến độ Phase 2](./plans/phase2-progress.md)
+- [🏗️ Kiến trúc & Công nghệ AI](./plans/architecture-ai.md)
+- [📝 UPDATE.md — Chi tiết nâng cấp](./UPDATE.md)
+- [🛡️ Defense Strategy (Hackathon)](./hackathon_defense_strategy.md)
+
+---
+
+> *Dự án phát triển bởi nhóm Hackathon — Bệnh viện Tim Hà Nội*
+> *"Vì Một Trái Tim Khỏe" ❤️*

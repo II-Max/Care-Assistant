@@ -1,14 +1,16 @@
 """
-Document Loader — Load và parse tất cả file dữ liệu từ Data/.
+Document Loader — Load và parse tất cả file dữ liệu từ Data/ hoặc knowledge/approved/.
 
 Hỗ trợ:
 - File JSON (.json): parse array of objects với title + content
 - File Markdown (.md): parse heading + body content
+- Expiry detection: tự động bỏ qua tài liệu hết hạn (dựa trên metadata **Hết hạn:**)
 """
 
 import json
 import re
 import hashlib
+from datetime import datetime, date
 from pathlib import Path
 from dataclasses import dataclass, field
 from typing import Optional
@@ -27,7 +29,11 @@ class Document:
 
 
 class DocumentLoader:
-    """Load và parse tất cả documents từ Data directory."""
+    """Load và parse tất cả documents từ Data directory.
+
+    Ưu tiên knowledge/approved/ nếu tồn tại và có nội dung.
+    Tự động bỏ qua tài liệu hết hạn (expiry).
+    """
 
     def __init__(self, data_dir: Optional[str] = None):
         requested_dir = Path(data_dir or settings.DATA_DIR)
@@ -42,7 +48,11 @@ class DocumentLoader:
     def _is_supported_markdown(file_path: Path) -> bool:
         """Ignore scraper artifacts that are not answerable hospital knowledge."""
         name = file_path.name
-        if "Metadata" in name or "Contacts" in name or "Tables" in name or "Forms" in name or "Links" in name or "Media" in name:
+        unsupported_prefixes = ("🏷️", "📇", "📊", "📋", "🔗", "🖼️")
+        unsupported_keywords = ("Metadata", "Contacts", "Tables", "Forms", "Links", "Media")
+        if any(name.startswith(p) for p in unsupported_prefixes):
+            return False
+        if any(k in name for k in unsupported_keywords):
             return False
         return True
 
@@ -51,8 +61,24 @@ class DocumentLoader:
         normalized = re.sub(r"\s+", " ", content).strip().lower()
         return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
+    @staticmethod
+    def _is_expired(content: str) -> bool:
+        """Kiểm tra tài liệu có hết hạn dựa trên metadata **Hết hạn:**."""
+        match = re.search(r"\*\*Hết hạn:\*\*\s*(\d{2}/\d{2}/\d{4})", content)
+        if not match:
+            return False  # Không có expiry → valid
+        try:
+            expiry_date = datetime.strptime(match.group(1), "%d/%m/%Y").date()
+            return expiry_date < date.today()
+        except ValueError:
+            return False
+
     def load_all(self) -> list[Document]:
-        """Load tất cả file .md và .json từ data directory."""
+        """Load tất cả file .md và .json từ data directory.
+
+        Ưu tiên knowledge/approved/ nếu có.
+        Tự động deduplicate và bỏ tài liệu hết hạn.
+        """
         documents = []
 
         if not self.data_dir.exists():
@@ -71,11 +97,18 @@ class DocumentLoader:
             if not self._is_supported_markdown(md_file):
                 continue
             docs = self._load_markdown(md_file)
+            # Lọc: bỏ tài liệu hết hạn
+            valid_docs = []
+            for d in docs:
+                if self._is_expired(d.content):
+                    print(f"⏰ Expired: {d.title} (bỏ qua)")
+                    continue
+                valid_docs.append(d)
             # Chỉ thêm nếu chưa có trong JSON
-            new_docs = [d for d in docs if d.title not in json_titles]
+            new_docs = [d for d in valid_docs if d.title not in json_titles]
             documents.extend(new_docs)
             if new_docs:
-                print(f"📄 Loaded MD: {md_file.name} → {len(new_docs)} documents")
+                print(f"📄 Loaded MD: {md_file.name} → {len(new_docs)} documents (expired filtered)")
 
         unique_documents = []
         seen_hashes = set()
@@ -87,7 +120,7 @@ class DocumentLoader:
             doc.metadata["content_hash"] = content_hash
             unique_documents.append(doc)
 
-        print(f"\n✅ Tổng cộng: {len(unique_documents)} documents loaded")
+        print(f"\n✅ Tổng cộng: {len(unique_documents)} documents loaded (từ {self.data_dir.name})")
         return unique_documents
 
     def _load_json(self, file_path: Path) -> list[Document]:
