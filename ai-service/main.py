@@ -161,6 +161,7 @@ async def chat_endpoint(request: ChatRequest, http_request: Request):
 
     Nhận tin nhắn từ người dùng, xử lý qua RAG pipeline,
     trả về câu trả lời grounded từ Knowledge Base.
+    Tự động log conversation, messages, audit vào Firebase.
     """
     if not app_state["is_ready"]:
         raise HTTPException(
@@ -169,6 +170,9 @@ async def chat_endpoint(request: ChatRequest, http_request: Request):
         )
 
     client_ip = http_request.client.host if http_request.client else "unknown"
+    user_agent = http_request.headers.get("User-Agent", "")
+
+    # Rate limiting
     if not rate_limiter.allow(client_ip):
         return JSONResponse(
             status_code=429,
@@ -179,7 +183,9 @@ async def chat_endpoint(request: ChatRequest, http_request: Request):
     try:
         response = await chat_service.chat(
             message=request.message,
-            conversation_id=request.conversation_id
+            conversation_id=request.conversation_id,
+            user_ip=client_ip,
+            user_agent=user_agent
         )
         return response
     except Exception as e:
@@ -202,6 +208,86 @@ async def health_endpoint():
         model=settings.NVIDIA_MODEL,
         embedding_model=settings.NVIDIA_EMBED_MODEL
     )
+
+
+@app.post("/api/ai/feedback")
+async def feedback_endpoint(request: Request):
+    """Nhận feedback từ người dùng về câu trả lời AI.
+
+    Request body:
+    {
+        "conversation_id": "conv_...",
+        "message_id": "msg_...",
+        "rating": 4,          # 1-5
+        "comment": "Tốt",    # optional
+        "category": "general" # general, accuracy, relevance, safety, other
+    }
+    """
+    try:
+        data = await request.json()
+        conversation_id = data.get("conversation_id", "")
+        rating = data.get("rating", 3)
+        comment = data.get("comment", "")
+        category = data.get("category", "general")
+        user_ip = request.client.host if request.client else ""
+
+        # Validate rating
+        if not (1 <= rating <= 5):
+            return JSONResponse(
+                status_code=400,
+                content={"detail": "Rating phải từ 1 đến 5."}
+            )
+
+        # Log to Firebase nếu có
+        from services.firebase import firebase_client, hash_ip
+        if firebase_client and firebase_client.is_ready:
+            from services.firebase.schemas import Feedback
+            firebase_client.add_feedback(Feedback(
+                conversation_id=conversation_id or "unknown",
+                message_id=data.get("message_id", ""),
+                rating=rating,
+                comment=comment,
+                category=category,
+                user_ip=hash_ip(user_ip)
+            ).to_dict())
+
+        return {
+            "status": "ok",
+            "message": "Cảm ơn bạn đã đánh giá! Chúng tôi sẽ cải thiện dịch vụ."
+        }
+
+    except Exception as e:
+        print(f"❌ Feedback error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Lỗi xử lý feedback."}
+        )
+
+
+@app.get("/api/ai/conversation/{conversation_id}")
+async def get_conversation_endpoint(conversation_id: str, request: Request):
+    """Lấy lịch sử conversation (cho frontend hiển thị lại)."""
+    try:
+        from services.firebase import firebase_client
+        if firebase_client and firebase_client.is_ready:
+            messages = firebase_client.get_conversation_messages(conversation_id)
+            conversation = firebase_client.get_conversation(conversation_id)
+            return {
+                "conversation": conversation or {},
+                "messages": messages
+            }
+        else:
+            return {
+                "conversation": {},
+                "messages": [],
+                "note": "Firebase chưa được kết nối. Lịch sử không khả dụng."
+            }
+    except Exception as e:
+        print(f"❌ Get conversation error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Lỗi lấy lịch sử hội thoại."}
+        )
 
 
 @app.get("/")

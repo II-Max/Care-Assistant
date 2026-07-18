@@ -39,8 +39,8 @@ class Settings:
     # RAG Pipeline
     CHUNK_SIZE: int = int(os.getenv("CHUNK_SIZE", "400"))
     CHUNK_OVERLAP: int = int(os.getenv("CHUNK_OVERLAP", "50"))
-    TOP_K: int = int(os.getenv("TOP_K", "4"))
-    SIMILARITY_THRESHOLD: float = float(os.getenv("SIMILARITY_THRESHOLD", "0.60"))
+    TOP_K: int = int(os.getenv("TOP_K", "5"))
+    SIMILARITY_THRESHOLD: float = float(os.getenv("SIMILARITY_THRESHOLD", "0.35"))
 
     # Data
     DATA_DIR: str = os.getenv(
@@ -51,6 +51,9 @@ class Settings:
         "KNOWLEDGE_APPROVED_DIR",
         str(Path(__file__).resolve().parent.parent / "knowledge" / "approved")
     )
+
+    # Firebase (optional)
+    FIREBASE_CREDENTIALS_PATH: str = os.getenv("FIREBASE_CREDENTIALS_PATH", "")
 
     # Hospital Info (hardcoded — dữ liệu chính thống)
     HOSPITAL_NAME: str = "Bệnh viện Tim Hà Nội"
