@@ -1,8 +1,20 @@
 # 📋 Hospital Website — Kiến Trúc Hệ Thống & Prompt Chuyên Nghiệp
 
 ---
-
-## PHẦN 1: TOÀN BỘ CẤU TRÚC HỆ THỐNG HIỆN TẠI
+## Bài Toán :
+1. Tóm tắt bối cảnh và thách thức (Background & Challenge)
+Bối cảnh: Bệnh viện Tim Hà Nội là bệnh viện chuyên khoa tim mạch hạng I, tiếp nhận khoảng 2.500 - 3.000 bệnh nhân ngoại trú mỗi ngày. Lượng câu hỏi lặp đi lặp lại về thủ tục, lịch khám, giá dịch vụ, bảo hiểm y tế... qua các kênh truyền thống đang gây áp lực lớn cho nhân viên y tế, dẫn đến phản hồi chậm và trải nghiệm khách hàng chưa đồng bộ.12
+Thách thức: Phát triển một Trợ lý Chăm sóc Khách hàng AI (AI Customer Care Assistant) tích hợp trực tiếp vào website của bệnh viện để hỗ trợ giải đáp thắc mắc và cung cấp thông tin cho bệnh nhân cùng người nhà.3
+2. Bài toán chính (Cô đọng)
+Bài toán: Thiết kế và triển khai một hệ thống Trợ lý AI giải đáp thông tin y tế và dịch vụ dựa trên bộ tri thức chính thống của Bệnh viện Tim Hà Nội, có khả năng kết nối hệ thống dữ liệu và đảm bảo an toàn thông tin, nhằm giảm tải cho đội ngũ nhân sự và tối ưu hóa trải nghiệm của người bệnh.4562
+3. Các tiêu chí cốt lõi cần đáp ứng
+Trả lời dựa trên tri thức (Knowledge-based QA): Phản hồi chính xác các thông tin về đặt lịch, quy trình khám chữa bệnh, bảo hiểm y tế (BHYT), giá dịch vụ, giờ làm việc và thông tin các khoa phòng/bác sĩ.7
+Tích hợp hệ thống (System Integration): Có khả năng kết nối với API hoặc hệ thống thông tin của bệnh viện để tra cứu lịch hẹn, thông tin dịch vụ và điều hướng người dùng đến các kênh đặt lịch (Website, Zalo Mini App, Hotline).8
+Trải nghiệm hội thoại (Conversational Experience): Hỗ trợ giao tiếp qua văn bản (Text-based). Điểm cộng lớn nếu tích hợp thêm công nghệ nhận dạng giọng nói (ASR) và tổng hợp giọng nói (TTS) bằng tiếng Việt.910
+Trí tuệ nhân tạo đáng tin cậy (Trustworthy AI): Câu trả lời phải dựa hoàn toàn trên cơ sở dữ liệu chính thức của bệnh viện, tuyệt đối không tự tạo lập thông tin (hallucinate). Nếu thiếu thông tin, phải hướng dẫn người dùng đến các kênh hỗ trợ phù hợp.11
+Xử lý tình huống khẩn cấp (Emergency Handling): Khi phát hiện các triệu chứng khẩn cấp (đau ngực dữ dội, khó thở, ngất xỉu...), AI tuyệt đối không đưa ra lời khuyên điều trị mà phải lập tức hướng dẫn người dùng tiếp cận dịch vụ cấp cứu hoặc đến khoa Cấp cứu của bệnh viện.12
+Sẵn sàng triển khai (Deployment Readiness): Khả năng cài đặt trên hạ tầng của bệnh viện và tuân thủ nghiêm ngặt các quy định về bảo mật dữ liệu, quyền riêng tư và bảo vệ dữ liệu y tế.6
+## PHẦN 1: TOÀN BỘ CẤU TRÚC HỆ THỐNG Gợi Ý
 
 ### 1.1 Cây Thư Mục Dự Án
 
