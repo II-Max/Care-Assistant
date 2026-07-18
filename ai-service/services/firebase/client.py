@@ -54,6 +54,11 @@ class FirebaseClient:
         return self._initialized and not self._fallback_mode
 
     def initialize(self, credential_path: Optional[str] = None) -> bool:
+        # Guard: tranh double-init khi ca main.py va chat_service deu goi initialize
+        if self._initialized:
+            logger.debug("Firebase already initialized, skipping.")
+            return self.is_ready
+
         cred_path = credential_path or settings.FIREBASE_CREDENTIALS_PATH
 
         if not cred_path:
@@ -84,8 +89,14 @@ class FirebaseClient:
             return False
 
         try:
-            cred = credentials.Certificate(str(cred_file))
-            firebase_admin.initialize_app(cred)
+            # Kiem tra neu app da duoc khoi tao (tranh ValueError)
+            try:
+                firebase_admin.get_app()
+                logger.debug("Firebase app already exists, reusing.")
+            except ValueError:
+                cred = credentials.Certificate(str(cred_file))
+                firebase_admin.initialize_app(cred)
+
             self._db = firestore.client()
             self._auth = auth
             self._initialized = True

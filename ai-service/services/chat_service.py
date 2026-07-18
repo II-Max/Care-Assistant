@@ -97,7 +97,11 @@ class ChatService:
         self._conversation_counter = 0  # Tạo conversation ID tạm
 
     def initialize(self):
-        """Khởi tạo LLM client + Firebase."""
+        """Khởi tạo LLM client.
+
+        Lưu ý: Firebase được khởi tạo bởi main.py (Step 4b).
+        ChatService chỉ cần kiểm tra trạng thái Firebase, không gọi initialize() lại.
+        """
         # Init LLM
         try:
             self.client = AsyncOpenAI(
@@ -109,11 +113,9 @@ class ChatService:
             logger.error(f"❌ LLM init failed: {e}")
             raise
 
-        # Init Firebase (optional)
         if FIREBASE_AVAILABLE and firebase_client:
-            firebase_client.initialize()
             if firebase_client.is_ready:
-                logger.info("✅ Firebase integrated with Chat Service")
+                logger.info("✅ Firebase connected with Chat Service")
             else:
                 logger.info("ℹ️ Firebase in fallback mode (offline logging)")
         else:
