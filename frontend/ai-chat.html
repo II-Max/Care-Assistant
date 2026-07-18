@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Chat với Trợ lý AI của Bệnh viện Tim Hà Nội. Tra cứu thông tin dịch vụ, đặt lịch khám, bảo hiểm y tế.">
+  <title>Chat AI — Bệnh viện Tim Hà Nội</title>
+  <link rel="stylesheet" href="css/hospital-design.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🫀</div>
+        <span>BV Tim Hà Nội</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="departments.html">Chuyên khoa</a>
+        <a href="about.html">Giới thiệu</a>
+        <a href="contact.html">Liên hệ</a>
+        <a href="ai-chat.html" class="nav-cta active">💬 Chat AI</a>
+      </nav>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <!-- Full Page Chat -->
+  <div class="chat-full">
+    <div class="chat-header">
+      <div class="chat-header-avatar">🏥</div>
+      <div class="chat-header-info">
+        <h4>Trợ lý AI — Bệnh viện Tim Hà Nội</h4>
+        <p>Hỗ trợ thông tin dịch vụ • Đặt lịch khám • BHYT</p>
+      </div>
+    </div>
+
+    <div class="chat-disclaimer">
+      ⚕️ Thông tin do AI cung cấp chỉ mang tính tham khảo. Không thay thế tư vấn y tế chuyên môn. 
+      Trong trường hợp khẩn cấp, gọi ngay <strong>115</strong> hoặc <a href="tel:19001082">19001082</a>.
+    </div>
+
+    <div class="chat-messages" id="chat-messages"></div>
+
+    <div class="quick-replies" id="quick-replies"></div>
+
+    <div class="chat-input-area">
+      <input type="text" class="chat-input" id="chat-input" 
+             placeholder="Nhập câu hỏi của bạn..." 
+             maxlength="2000"
+             autocomplete="off">
+      <button class="chat-send" id="chat-send" aria-label="Gửi tin nhắn">➤</button>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/app.js"></script>
+  <script src="js/chat.js"></script>
+</body>
+</html>
