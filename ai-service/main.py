@@ -1,31 +1,46 @@
 """
-🏥 AI Service — FastAPI Entry Point
 
-Bệnh viện Tim Hà Nội — AI Customer Care Assistant
-RAG-based chatbot service với NVIDIA NIM API.
+AI Service - FastAPI Entry Point
+
+
+
+Benh vien Tim Ha Noi - AI Customer Care Assistant
+RAG-based chatbot service voi NVIDIA NIM API.
 
 Phase 3: Booking, Handoff, Departments, Auth.
 
 Startup sequence:
-1. Load documents từ Data/
+
+1. Load documents tu Data/
 2. Chunk documents
-3. Tạo embeddings & build FAISS/ChromaDB index
+
+3. Tao embeddings & build FAISS/ChromaDB index
 4. Initialize Emergency Detector
 5. Initialize Chat Service
 6. Initialize Database connection
 7. Start FastAPI server
 
 Endpoints:
-- POST /api/ai/chat              — Chat với AI
-- GET  /api/ai/health            — Health check
-- POST /api/ai/booking           — Đặt lịch khám
-- GET  /api/ai/booking/{id}      — Tra cứu lịch hẹn
-- POST /api/ai/booking/{id}/cancel — Hủy lịch hẹn
-- GET  /api/ai/booking/lookup    — Tra cứu theo số điện thoại
-- POST /api/ai/handoff           — Chuyển tiếp nhân viên
-- GET  /api/ai/departments       — Danh sách chuyên khoa
-- POST /api/ai/feedback          — Feedback
-- GET  /api/ai/conversation/{id} — Lịch sử hội thoại
+
+
+
+
+
+
+
+
+
+
+- POST /api/ai/chat              - Chat voi AI
+- GET  /api/ai/health            - Health check
+- POST /api/ai/booking           - Dat lich kham
+- GET  /api/ai/booking/{id}      - Tra cuu lich hen
+- POST /api/ai/booking/{id}/cancel - Huy lich hen
+- GET  /api/ai/booking/lookup    - Tra cuu theo so dien thoai
+- POST /api/ai/handoff           - Chuyen tiep nhan vien
+- GET  /api/ai/departments       - Danh sach chuyen khoa
+- POST /api/ai/feedback          - Feedback
+- GET  /api/ai/conversation/{id} - Lich su hoi thoai
 """
 
 import sys
@@ -35,6 +50,10 @@ from pathlib import Path
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
 from starlette.staticfiles import StaticFiles
+
+# Fix Windows console encoding cho Unicode
+if sys.stdout.encoding.lower() in ('cp1252', 'ascii'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -135,8 +154,18 @@ async def lifespan(app: FastAPI):
             except Exception as db_err:
                 print(f"   ⚠️  Database init: {db_err}")
 
-            # Step 5: Initialize services
-            print("\n🔧 Step 5: Initializing services...")
+            # Step 4b: Initialize Firebase (for logging, booking fallback)
+            print("\n☁️  Step 4b: Initializing Firebase...")
+            try:
+                from services.firebase import firebase_client
+                firebase_client.initialize()
+                if firebase_client.is_ready:
+                    print("   ✅ Firebase ready")
+                else:
+                    print("   ⚠️  Firebase not configured (offline mode)")
+            except Exception as fb_err:
+                print(f"   ⚠️  Firebase init: {fb_err}")
+
             emergency_detector.initialize()
             chat_service.initialize()
 
