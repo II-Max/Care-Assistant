@@ -2,8 +2,11 @@
 .SYNOPSIS
 Khởi động hệ thống AI Customer Care Assistant (Bệnh viện Tim Hà Nội).
 
+Phase 3: Booking, Handoff, Database, Departments.
+
 .DESCRIPTION
-Script này sẽ cài đặt các dependencies (nếu cần) và khởi động FastAPI AI Service (port 8001).
+Script cài đặt dependencies và khởi động FastAPI AI Service (port 8001).
+Service phục vụ cả REST API lẫn frontend static files.
 #>
 
 $ErrorActionPreference = "Stop"

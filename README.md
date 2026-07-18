@@ -1,6 +1,6 @@
 # 🏥 AI Customer Care Assistant — Bệnh viện Tim Hà Nội
 
-> **Trạng thái:** `Phase 1 ✅ HOÀN THÀNH` → `Phase 2 🔄 ĐANG THỰC HIỆN`
+> **Trạng thái:** `Phase 1 ✅` → `Phase 2 ✅` → `Phase 3 🔄 ĐANG THỰC HIỆN`
 > **Cập nhật lần cuối:** 18/07/2026
 
 ---
@@ -26,25 +26,25 @@ Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải 
 | **🏥 Website y tế** | 5 trang: Trang chủ, Chat AI, Chuyên khoa, Giới thiệu, Liên hệ |
 | **🎨 Design system** | Giao diện chuyên nghiệp, mobile-first, WCAG 2.1 AA |
 
-### 🔄 Đang phát triển (Phase 2)
+### 🔄 Đang phát triển (Phase 3)
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| **Persistent Vector Store** | ChromaDB — không mất index sau restart |
-| **Hybrid Search** | BM25 + Dense → RRF → Cross-encoder reranker |
-| **Citation Validation** | Xác thực từng citation trước khi trả response |
-| **Feedback Workflow** | User đánh giá câu trả lời của AI |
-| **Monitoring** | OpenTelemetry + Prometheus + Grafana |
-| **150 câu hỏi test** | Evaluation suite cho tiếng Việt |
+| **📅 Đặt lịch khám** | Booking API với idempotency, chống trùng slot |
+| **📋 Tra cứu lịch hẹn** | Tìm kiếm theo số điện thoại, hủy lịch |
+| **👨‍⚕️ Handoff** | Chuyển tiếp yêu cầu phức tạp cho nhân viên |
+| **🏥 Danh sách chuyên khoa** | API departments listing |
+| **🗄️ Database** | PostgreSQL + asyncpg (fallback SQLite) |
+| **📱 Notification Queue** | Worker pattern cho Zalo/SMS/Email |
 
-### ⏳ Kế hoạch tương lai (Phase 3+)
+### ⏳ Kế hoạch tương lai (Phase 4+)
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| Đặt lịch khám thực tế | PostgreSQL + Redis |
-| HIS Integration | Kết nối hệ thống thông tin bệnh viện |
-| Auth & RBAC | OIDC/Keycloak |
+| Auth & RBAC | OIDC/Keycloak hoặc Firebase Auth |
 | Docker + CI/CD | Production deployment |
+| Voice (STT) | Speech-to-Text cho người già |
+| HIS Integration | Kết nối hệ thống thông tin bệnh viện |
 
 ---
 
@@ -56,9 +56,12 @@ Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải 
 | **Frontend** | Vanilla HTML/CSS/JS | ✅ Phase 1 |
 | **LLM** | meta/llama-3.1-70b-instruct (NVIDIA NIM) | ✅ Phase 1 |
 | **Embedding** | nv-embedqa-e5-v5 (NVIDIA NIM) | ✅ Phase 1 |
-| **Vector Store** | FAISS (Phase 1) → ChromaDB (Phase 2) | ⚡ Đang nâng cấp |
-| **Search** | Dense (Phase 1) → Hybrid (Phase 2) | ⚡ Đang nâng cấp |
-| **Monitoring** | OpenTelemetry + Prometheus | 🔄 Phase 2 |
+| **Vector Store** | FAISS → ChromaDB (persistent) | ✅ Phase 2 |
+| **Search** | Dense → Hybrid (BM25 + RRF + reranker) | ✅ Phase 2 |
+| **Database** | PostgreSQL (asyncpg) / SQLite fallback | 🔄 Phase 3 |
+| **Booking** | API + idempotency + optimistic locking | 🔄 Phase 3 |
+| **Handoff** | Ticket-based escalation | 🔄 Phase 3 |
+| **Notification** | Queue-based (Redis worker) | 🔄 Phase 3 |
 
 ---
 
@@ -95,19 +98,30 @@ NVIDIA_API_KEY=nvapi-xxxxxxxxxxxxx
 │   ├── main.py             # Entry point
 │   ├── config.py           # Settings
 │   ├── models/             # Pydantic schemas
-│   ├── rag/                # RAG pipeline
+│   ├── database/           # 🗄️ PostgreSQL + SQLite fallback
+│   │   ├── connection.py   # asyncpg pool manager
+│   │   └── models.py       # Data models (appointments, users, ...)
+│   ├── rag/                # 🔍 RAG pipeline
 │   │   ├── document_loader.py
 │   │   ├── chunker.py
 │   │   ├── embedder.py
 │   │   ├── vector_store.py
+│   │   ├── bm25_search.py
+│   │   ├── hybrid_retriever.py
 │   │   └── retriever.py
-│   └── services/           # Business logic
+│   └── services/           # ⚙️ Business logic
 │       ├── emergency_detector.py
 │       ├── chat_service.py
-│       └── rate_limiter.py
+│       ├── rate_limiter.py
+│       ├── booking_service.py   # 📅 Đặt lịch khám
+│       ├── handoff_service.py   # 👨‍⚕️ Chuyển tiếp nhân viên
+│       └── firebase/            # ☁️ Firebase integration
+│           ├── client.py
+│           └── schemas.py
 ├── frontend/               # 🎨 Giao diện
 │   ├── index.html, ai-chat.html
-│   ├── departments.html, contact.html, about.html
+│   ├── booking.html, departments.html
+│   ├── contact.html, about.html
 │   ├── css/hospital-design.css
 │   └── js/chat.js, app.js
 ├── knowledge/

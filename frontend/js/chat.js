@@ -28,6 +28,8 @@
       'Bảo hiểm y tế chi trả những gì?',
       'Các dịch vụ khám tim mạch?',
       'Địa chỉ bệnh viện?',
+      'Tôi cần nói chuyện với nhân viên',
+      'Hủy lịch khám',
     ],
     welcomeMessage: `Xin chào! 👋 Tôi là Trợ lý AI của **Bệnh viện Tim Hà Nội**.
 

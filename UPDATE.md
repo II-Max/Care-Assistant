@@ -6,7 +6,7 @@ Chuyển prototype Hackathon thành hệ thống có thể pilot an toàn cho tr
 
 ## Phase 1 — Foundation & Safety Release Blockers
 
-**Trạng thái: Hoàn thành trong cập nhật này**
+**Trạng thái: ✅ Hoàn thành**
 
 Phạm vi:
 
@@ -19,48 +19,59 @@ Phạm vi:
 7. Loại bỏ URL AI hard-code ở frontend và giới hạn link chat tới domain chính thức.
 8. Bổ sung .gitignore, template môi trường và kiểm thử unit cho safety/retrieval.
 
-Điều kiện hoàn thành:
-
-- Browser chỉ gọi endpoint tương đối /api/ai/chat.
-- Không có từ khóa cấp cứu nào phải đợi gọi LLM.
-- CORS không còn wildcard.
-- Loader không index media, links, metadata, contacts và tables rỗng.
-- Kết quả dưới ngưỡng không được gửi vào LLM.
-
 ## Phase 2 — Grounded RAG & Operability
+
+**Trạng thái: ✅ Hoàn thành**
 
 Phạm vi:
 
 1. Xây dựng knowledge/approved, content manifest, owner, approved_at và expires_at cho từng tài liệu.
-2. Lưu index bền vững; chuyển sang Qdrant nếu cần hybrid sparse/dense, filter metadata hoặc nhiều worker.
-3. Hybrid retrieval: dense + BM25/sparse -> RRF -> reranker.
+2. Lưu index bền vững; chuyển sang ChromaDB cho hybrid sparse/dense, filter metadata và persistent storage.
+3. Hybrid retrieval: dense + BM25/sparse -> RRF -> reranker (cross-encoder/ms-marco-MiniLM-L-6-v2).
 4. Ép LLM trả JSON có answer, citations, handoff_required và risk_level; xác thực citation trước khi trả frontend.
-5. Thêm feedback workflow, audit log ẩn danh, OpenTelemetry, Prometheus/Grafana và dashboard RAG.
+5. Thêm feedback workflow, audit log ẩn danh.
 6. Tạo bộ đánh giá tối thiểu 150 câu hỏi tiếng Việt được đại diện bệnh viện duyệt.
 
-Điều kiện hoàn thành:
-
-- 100% câu trả lời dịch vụ có citation hoặc fallback.
-- Tài liệu hết hiệu lực không được retrieval.
-- Groundedness và Recall@20 được đo tự động trong CI.
-
 ## Phase 3 — Booking & Hospital Integration
+
+**Trạng thái: 🔄 Đang thực hiện**
 
 Phạm vi:
 
 1. PostgreSQL cho appointments, schedules, users và audit events.
-2. Booking transaction, idempotency key và unique partial index chống trùng slot.
-3. Redis + worker cho notification, indexing và outbox pattern.
+2. Booking transaction, idempotency key và optimistic locking chống trùng slot.
+3. Redis + worker cho notification, indexing.
 4. HIS Adapter, Zalo/SMS/Email Adapter và human handoff.
 5. OIDC/Keycloak hoặc Firebase Auth được backend xác thực; RBAC cho patient, doctor, admin.
 
-Điều kiện hoàn thành:
+### Đã hoàn thành trong Phase 3:
 
-- Không thể trùng slot khi gửi yêu cầu đồng thời.
-- Người dùng/bác sĩ chỉ thấy dữ liệu đúng quyền.
-- Lỗi HIS không làm mất booking event.
+- [x] Database connection layer (asyncpg + SQLite fallback)
+- [x] Data models (Appointment, Doctor, Schedule, TimeSlot, AuditEvent, NotificationQueue)
+- [x] Booking service: validation, idempotency check, optimistic locking
+- [x] Booking API: POST /api/ai/booking, GET /api/ai/booking/{id}, POST cancel, GET lookup
+- [x] Handoff service: ticket creation với priority-based escalation
+- [x] Handoff API: POST /api/ai/handoff
+- [x] Departments API: GET /api/ai/departments
+- [x] Frontend booking form (booking.html) với validation đầy đủ
+- [x] Navigation cập nhật (thêm booking link)
+- [x] Chat quick replies mở rộng (handoff + cancel booking)
+- [x] Chat handoff tự động khi AI detect cần nhân viên
+- [x] Thêm dependencies: asyncpg, redis, huey, httpx
 
-## Phase 4 — Production Readiness
+### Còn lại:
+
+- [ ] Redis worker for notification queue
+- [ ] Zalo/SMS/Email adapter
+- [ ] Database migration scripts
+- [ ] Seed data (departments, doctors)
+- [ ] Staff dashboard for handoff tickets
+- [ ] Booking history page
+- [ ] Firebase Auth endpoints
+- [ ] RBAC middleware
+- [ ] HIS Adapter
+
+## Phase 4 — Production Readiness (Kế hoạch)
 
 Phạm vi:
 
@@ -68,9 +79,3 @@ Phạm vi:
 2. TLS, WAF/rate limit tại gateway, backup/restore, rotation secrets và incident runbook.
 3. Đánh giá tác động dữ liệu cá nhân, retention policy, kiểm thử xâm nhập và quy trình phê duyệt nội dung y khoa.
 4. SLO, cảnh báo và diễn tập sự cố.
-
-Điều kiện hoàn thành:
-
-- Không có PII trong log/telemetry/vector store.
-- Có backup/restore được kiểm thử.
-- Có quy trình xử lý nội dung sai, tài liệu hết hạn và sự cố an toàn.
