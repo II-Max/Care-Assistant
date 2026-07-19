@@ -41,6 +41,70 @@
       font-size: var(--font-size-sm);
     }
 
+    .emergency-banner {
+      margin-bottom: 24px;
+      padding: 16px 18px;
+      border-radius: var(--border-radius);
+      border: 1px solid #fecaca;
+      background: linear-gradient(135deg, #fff7ed, #fee2e2);
+      color: var(--gray-800);
+    }
+
+    .emergency-banner strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--danger);
+      font-size: 1rem;
+    }
+
+    .emergency-banner p {
+      margin: 0;
+      font-size: var(--font-size-sm);
+      color: var(--gray-700);
+      line-height: 1.6;
+    }
+
+    .support-card {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--gray-200);
+      background: var(--gray-50);
+    }
+
+    .support-card .card-title {
+      margin-bottom: 8px;
+      font-size: var(--font-size-md);
+      color: var(--gray-900);
+    }
+
+    .support-card p {
+      margin-bottom: 14px;
+      color: var(--gray-600);
+      line-height: 1.6;
+    }
+
+    .support-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .support-actions .btn {
+      flex: 1 1 220px;
+    }
+
+    .btn-success {
+      background: linear-gradient(180deg, #16a34a, #15803d);
+      color: #fff;
+      border-color: #16a34a;
+    }
+
+    .btn-success:hover {
+      background: linear-gradient(180deg, #15803d, #166534);
+      color: #fff;
+    }
+
     .form-group {
       margin-bottom: 24px;
     }
@@ -298,6 +362,11 @@
         <div class="booking-form" id="booking-form-container">
           <!-- Form -->
           <div id="booking-form-view">
+            <div class="emergency-banner" role="alert">
+              <strong>🚨 Đau ngực dữ dội? Khó thở? Ngất?</strong>
+              <p>Đây là tình huống cấp cứu. Không nên đặt lịch. Hãy gọi <a href="tel:115"><strong>115</strong></a> hoặc đến Khoa Cấp cứu ngay.</p>
+            </div>
+
             <h2>📝 Thông Tin Đặt Lịch</h2>
             <p class="form-subtitle">Vui lòng điền đầy đủ thông tin bên dưới. Chúng tôi sẽ liên hệ xác nhận trong giờ hành chính.</p>
 
@@ -403,6 +472,14 @@
                 Thông tin của bạn được bảo mật theo quy định.
               </p>
             </form>
+
+            <div class="support-card">
+              <div class="card-title">🤖 Không biết chọn chuyên khoa?</div>
+              <p>Hỏi AI ngay để được gợi ý đúng chuyên khoa, đường đi phù hợp và các bước tiếp theo trước khi đặt lịch.</p>
+              <div class="support-actions">
+                <a class="btn btn-primary" href="ai-chat.html" target="_blank" rel="noopener noreferrer">💬 Mở Chat AI</a>
+              </div>
+            </div>
           </div>
 
           <!-- Success -->
@@ -430,8 +507,15 @@
               <p style="color: var(--gray-600); margin-bottom: 12px;">
                 📞 Cần hỗ trợ ngay? Gọi <a href="tel:19001082"><strong>19001082</strong></a>
               </p>
-              <a href="index.html" class="btn btn-secondary">← Về trang chủ</a>
-              <a href="booking.html" class="btn btn-primary" style="margin-left: 8px;">📅 Đặt lịch mới</a>
+              <div class="support-card" style="margin-top: 16px; text-align: left;">
+                <div class="card-title">📱 Tiếp tục theo dõi qua Zalo</div>
+                <p>Nhận thông tin nhanh và tiếp tục trao đổi sau khi đặt lịch.</p>
+                <div class="support-actions">
+                  <a class="btn btn-success" href="https://miniapp.zaloplatforms.com/apps/2972821668579995579/" target="_blank" rel="noopener noreferrer">📱 Mở Zalo Mini App</a>
+                  <a href="index.html" class="btn btn-secondary">← Về trang chủ</a>
+                  <a href="booking.html" class="btn btn-primary">📅 Đặt lịch mới</a>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -439,7 +523,15 @@
         <!-- Sidebar -->
         <div class="booking-sidebar">
           <div class="card">
-            <div class="card-title">📞 Hotline hỗ trợ</div>
+            <div class="card-title">� Đặt lịch nhanh</div>
+            <div class="support-actions">
+              <a class="btn btn-success" href="https://miniapp.zaloplatforms.com/apps/2972821668579995579/" target="_blank" rel="noopener noreferrer">📱 Đặt lịch qua Zalo</a>
+              <a class="btn btn-primary" href="https://benhvientimhanoi.vn/he-thong/hen-kham/index.html" target="_blank" rel="noopener noreferrer">🌐 Website Bệnh viện</a>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">�📞 Hotline hỗ trợ</div>
             <ul class="info-list">
               <li>📞 <a href="tel:19001082"><strong>19001082</strong></a></li>
               <li>🕐 Thứ 2 – Thứ 7: 8h – 16h</li>

@@ -3,62 +3,254 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Chat với Trợ lý AI của Bệnh viện Tim Hà Nội. Tra cứu thông tin dịch vụ, đặt lịch khám, bảo hiểm y tế.">
-  <title>Chat AI — Bệnh viện Tim Hà Nội</title>
+  <meta name="description" content="Chat voi Tro ly AI Cham soc Khach hang cua Benh vien Tim Ha Noi. Dat lich kham, tra cuu bac si, gia dich vu, bao hiem y te.">
+  <meta name="keywords" content="chat AI benh vien, tu van y te, dat lich kham, bao hiem y te">
+  <meta name="robots" content="index, follow">
+  <meta property="og:title" content="Tro ly AI Cham soc Khach hang - Benh vien Tim Ha Noi">
+  <title>Tro ly AI Cham soc Khach hang &mdash; Benh vien Tim Ha Noi</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Roboto+Condensed:wght@400;700&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/hospital-design.css">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>">
+  <link rel="icon" href="https://benhvientimhanoi.vn/assets/img/favicon.png">
+  <style>
+    :root {
+      --chat-bg:#f4f6fb;
+      --sidebar-bg:#1a2235;
+      --user-bub:linear-gradient(135deg,#005ca9,#0071cc);
+      --bot-bub:#fff;
+      --bot-bdr:#e4eaf3;
+      --av-bot:linear-gradient(135deg,#005ca9,#0096d6);
+      --av-user:linear-gradient(135deg,#3b4f66,#55687f);
+      --hdr-h:64px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body.ai-chat-page{font-family:Inter,Roboto,Arial,sans-serif;background:var(--chat-bg);color:#1a2235;min-height:100vh;display:flex;flex-direction:column}
+    /* HEADER */
+    .ac-hdr{position:sticky;top:0;z-index:200;height:var(--hdr-h);background:#fff;border-bottom:1px solid #e4eaf3;box-shadow:0 2px 14px rgba(0,52,108,.06);display:flex;align-items:center;padding:0 24px;gap:16px;flex-wrap:wrap}
+    .ac-hdr-logo{display:flex;align-items:center;gap:12px;text-decoration:none;flex-shrink:0}
+    .ac-hdr-logo img{height:36px;width:auto}
+    .logo-strong{font-family:'Roboto Condensed',sans-serif;font-size:1.05rem;font-weight:700;color:#005ca9;text-transform:uppercase;line-height:1.1;display:block}
+    .logo-sub{font-size:.7rem;color:#df2027;font-weight:600;text-transform:uppercase;display:block}
+    .hdr-div{width:1px;height:32px;background:#e4eaf3;flex-shrink:0}
+    .hdr-title{display:flex;align-items:center;gap:10px;font-size:.95rem;font-weight:600;color:#1a2235}
+    .ai-badge{padding:3px 10px;background:linear-gradient(90deg,#005ca9,#0096d6);color:#fff;border-radius:999px;font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+    .hdr-status{display:flex;align-items:center;gap:6px;margin-left:auto;color:#708298;font-size:.82rem}
+    .s-dot{width:8px;height:8px;border-radius:50%;background:#1f8f54;animation:sp 2s ease-in-out infinite}
+    @keyframes sp{0%,100%{opacity:1}50%{opacity:.4}}
+    .hdr-nav{display:flex;align-items:center;gap:4px;margin-left:10px}
+    .hdr-nav a{display:inline-flex;align-items:center;padding:8px 12px;border-radius:8px;font-size:.85rem;font-weight:500;color:#55687f;text-decoration:none;transition:background .15s,color .15s}
+    .hdr-nav a:hover{background:#f0f4fa;color:#005ca9}
+    .hdr-nav .bk{background:linear-gradient(135deg,#005ca9,#0071cc)!important;color:#fff!important;font-weight:600!important}
+    /* LAYOUT */
+    .ac-layout{display:flex;flex:1;min-height:0;height:calc(100vh - var(--hdr-h))}
+    /* SIDEBAR */
+    .ac-sidebar{width:258px;flex-shrink:0;background:var(--sidebar-bg);display:flex;flex-direction:column;padding:18px 12px;gap:4px;overflow-y:auto}
+    .sb-lbl{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.36);padding:0 8px;margin-top:14px;margin-bottom:2px}
+    .sb-lbl:first-child{margin-top:0}
+    .sb-btn{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:rgba(255,255,255,.8);text-decoration:none;font-size:.87rem;font-weight:500;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+    .sb-btn:hover{background:rgba(255,255,255,.09);color:#fff}
+    .sb-icon{width:28px;height:28px;border-radius:7px;background:rgba(255,255,255,.1);display:inline-flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+    .sb-emergency{margin-top:auto;padding:14px;border-radius:12px;background:rgba(207,32,39,.18);border:1px solid rgba(207,32,39,.32)}
+    .sb-emergency p{font-size:.78rem;color:rgba(255,255,255,.7);line-height:1.6;margin-bottom:10px}
+    .sb-emergency a{display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;background:#df2027;color:#fff;border-radius:8px;font-weight:700;font-size:.88rem;text-decoration:none;transition:background .15s}
+    .sb-emergency a:hover{background:#b8171d}
+    /* MAIN */
+    .ac-main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--chat-bg)}
+    /* WELCOME */
+    .chat-welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px 0;text-align:center;gap:26px}
+    .w-av{width:80px;height:80px;border-radius:50%;background:var(--av-bot);display:flex;align-items:center;justify-content:center;font-size:2.1rem;box-shadow:0 8px 32px rgba(0,92,169,.25),0 0 0 6px rgba(0,92,169,.08);animation:afloat 3s ease-in-out infinite}
+    @keyframes afloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+    .chat-welcome h2{font-size:1.65rem;font-weight:700;color:#1a2235;line-height:1.25}
+    .w-sub{font-size:.97rem;color:#55687f;max-width:490px;line-height:1.7}
+    /* SUGGESTIONS */
+    .sug-wrap{width:100%;max-width:680px}
+    .sug-lbl{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#95a7bb;margin-bottom:12px}
+    .suggested-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .sugg-chip{display:flex;align-items:center;gap:10px;padding:13px 16px;background:#fff;border:1.5px solid #e4eaf3;border-radius:14px;cursor:pointer;text-align:left;transition:border-color .15s,box-shadow .15s,transform .15s,background .15s;box-shadow:0 2px 8px rgba(0,52,108,.04)}
+    .sugg-chip:hover{border-color:#005ca9;background:#f0f6ff;box-shadow:0 4px 16px rgba(0,92,169,.12);transform:translateY(-2px)}
+    .sugg-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#edf5ff,#d6e8ff);color:#005ca9;display:inline-flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0}
+    .sugg-text{font-size:.87rem;font-weight:600;color:#1a2235;line-height:1.4}
+    /* MESSAGES */
+    .aichat-msgs-wrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;padding:20px 0;scroll-behavior:smooth}
+    .aichat-msgs-inner{width:100%;max-width:780px;margin:0 auto;padding:0 24px;display:flex;flex-direction:column;gap:22px}
+    .msg-row{display:flex;gap:12px;animation:mIn .32s cubic-bezier(.22,1,.36,1)}
+    @keyframes mIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+    .msg-row.user{flex-direction:row-reverse}
+    .msg-av{width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.95rem;flex-shrink:0;box-shadow:0 3px 10px rgba(0,0,0,.1)}
+    .msg-av.bot{background:var(--av-bot);color:#fff}
+    .msg-av.user{background:var(--av-user);color:#fff}
+    .msg-content{display:flex;flex-direction:column;gap:3px;max-width:calc(100% - 50px)}
+    .msg-name{font-size:.72rem;font-weight:600;color:#708298}
+    .msg-row.user .msg-name{text-align:right}
+    .msg-bubble{padding:13px 17px;border-radius:16px;font-size:.93rem;line-height:1.7;word-break:break-word}
+    .msg-row.bot .msg-bubble{background:var(--bot-bub);border:1px solid var(--bot-bdr);border-top-left-radius:4px;box-shadow:0 2px 10px rgba(0,52,108,.06);color:#1a2235}
+    .msg-row.user .msg-bubble{background:var(--user-bub);color:#fff;border-top-right-radius:4px;box-shadow:0 4px 16px rgba(0,92,169,.2)}
+    .msg-bubble.emergency{background:#fde6e8!important;border:1.5px solid #df2027!important;color:#8b0000!important}
+    .msg-bubble.warning{background:#fffbe6;border:1px solid #f0cc50;color:#6b4c00}
+    .msg-bubble strong,.msg-bubble b{font-weight:700}
+    .msg-bubble em,.msg-bubble i{font-style:italic}
+    .msg-bubble ul,.msg-bubble ol{margin:10px 0;padding-left:20px}
+    .msg-bubble li{margin-bottom:4px}
+    .msg-bubble p{margin-bottom:8px}
+    .msg-bubble p:last-child{margin-bottom:0}
+    .msg-bubble a{color:#005ca9;text-decoration:underline}
+    .msg-row.user .msg-bubble a{color:rgba(255,255,255,.9)}
+    /* TYPING */
+    .typing-row{display:flex;align-items:flex-start;gap:12px;animation:mIn .28s ease}
+    .typing-dots{display:inline-flex;align-items:center;gap:5px;padding:13px 17px;background:#fff;border:1px solid #e4eaf3;border-radius:16px;border-top-left-radius:4px;box-shadow:0 2px 10px rgba(0,52,108,.06)}
+    .td{width:8px;height:8px;border-radius:50%;background:#95a7bb;animation:tb 1.3s infinite ease-in-out}
+    .td:nth-child(2){animation-delay:.2s}
+    .td:nth-child(3){animation-delay:.4s}
+    @keyframes tb{0%,60%,100%{transform:translateY(0);background:#95a7bb}30%{transform:translateY(-6px);background:#005ca9}}
+    /* QUICK REPLIES */
+    .aqr{display:flex;flex-wrap:wrap;gap:7px;max-width:780px;margin:0 auto;padding:0 24px 12px;width:100%}
+    .aqr.hidden{display:none!important}
+    .aqr-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border:1.5px solid #c8d9ed;border-radius:999px;background:#fff;color:#005ca9;font-size:.81rem;font-weight:600;cursor:pointer;transition:border-color .15s,background .15s;box-shadow:0 1px 4px rgba(0,52,108,.06)}
+    .aqr-btn:hover{border-color:#005ca9;background:#eef5ff}
+    /* DISCLAIMER */
+    .ac-disc{text-align:center;font-size:.73rem;color:#95a7bb;padding:7px 24px 3px;max-width:780px;margin:0 auto;width:100%}
+    .ac-disc a{color:#708298}
+    /* BOTTOM */
+    .ac-bottom{background:var(--chat-bg);padding:10px 24px 18px;border-top:1px solid #e4eaf3}
+    .ac-input-wrap{max-width:780px;margin:0 auto;display:flex;align-items:flex-end;gap:10px;background:#fff;border:1.5px solid #c8d9ed;border-radius:16px;padding:8px 8px 8px 18px;box-shadow:0 4px 20px rgba(0,52,108,.07);transition:border-color .2s,box-shadow .2s}
+    .ac-input-wrap:focus-within{border-color:#005ca9;box-shadow:0 4px 20px rgba(0,92,169,.13),0 0 0 3px rgba(0,92,169,.08)}
+    #aichat-input{flex:1;min-height:42px;max-height:160px;padding:8px 0;border:none;outline:none;background:transparent;font-family:Inter,Roboto,Arial,sans-serif;font-size:.95rem;color:#1a2235;resize:none;line-height:1.6}
+    #aichat-input::placeholder{color:#a8b8c8}
+    .aichat-send{width:42px;height:42px;border-radius:12px;border:none;background:linear-gradient(135deg,#005ca9,#0071cc);color:#fff;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer;transition:background .15s,transform .15s,box-shadow .15s}
+    .aichat-send:hover:not(:disabled){background:linear-gradient(135deg,#004d91,#005ca9);transform:scale(1.04);box-shadow:0 6px 18px rgba(0,92,169,.3)}
+    .aichat-send:disabled{opacity:.5;cursor:not-allowed;transform:none}
+    .aichat-send svg{width:17px;height:17px}
+    .msg-sources{margin-top:10px;padding-top:10px;border-top:1px solid #e4eaf3;font-size:.77rem;color:#95a7bb}
+    .msg-handoff{margin-top:10px;padding:10px 12px;background:#fff8e1;border:1px solid #f0cc50;border-radius:8px;font-size:.81rem;color:#7a5c00;font-weight:500}
+    @media(max-width:900px){.ac-sidebar{display:none}}
+    @media(max-width:640px){.ac-hdr{padding:0 14px}.hdr-nav a:not(.bk){display:none}.suggested-grid{grid-template-columns:1fr}.ac-bottom{padding:8px 12px 14px}.ac-input-wrap{padding:6px 6px 6px 12px}.aichat-msgs-inner,.aqr,.ac-disc{padding-left:14px;padding-right:14px}.chat-welcome{padding:24px 14px 0}}
+  </style>
 </head>
-<body>
+<body class="ai-chat-page">
 
-  <!-- Header -->
-  <header class="header" id="header">
-    <div class="container">
-      <a href="index.html" class="logo">
-        <div class="logo-icon">🫀</div>
-        <span>BV Tim Hà Nội</span>
-      </a>
-      <nav class="nav" id="nav">
-        <a href="index.html">Trang chủ</a>
-        <a href="departments.html">Chuyên khoa</a>
-        <a href="about.html">Giới thiệu</a>
-        <a href="contact.html">Liên hệ</a>
-        <a href="booking.html" class="nav-cta">📅 Đặt lịch</a>
-        <a href="ai-chat.html" class="active">💬 Chat AI</a>
-      </nav>
-      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+  <!-- TOP HEADER -->
+  <header class="ac-hdr" id="aichat-header">
+    <a href="index.html" class="ac-hdr-logo" aria-label="Ve trang chu Benh vien Tim Ha Noi">
+      <img src="https://benhvientimhanoi.vn/assets/img/bvtim_logo.png" alt="Logo Benh vien Tim Ha Noi">
+      <div>
+        <span class="logo-strong">Benh vien Tim Ha Noi</span>
+        <span class="logo-sub">Vi mot trai tim khoe</span>
+      </div>
+    </a>
+    <div class="hdr-div" aria-hidden="true"></div>
+    <div class="hdr-title">
+      <span>&#x1F916;</span>
+      <span>Tro ly AI Cham soc Khach hang</span>
+      <span class="ai-badge">Beta</span>
     </div>
+    <div class="hdr-status" aria-label="Trang thai truc tuyen">
+      <span class="s-dot" aria-hidden="true"></span>
+      <span>Dang hoat dong</span>
+    </div>
+    <nav class="hdr-nav" aria-label="Dieu huong nhanh">
+      <a href="index.html">&#x1F3E0; Trang chu</a>
+      <a href="departments.html">&#x1F3E5; Chuyen khoa</a>
+      <a href="booking.html" class="bk">&#x1F4C5; Dat lich ngay</a>
+    </nav>
   </header>
 
-  <!-- Full Page Chat -->
-  <div class="chat-full">
-    <div class="chat-header">
-      <div class="chat-header-avatar">🏥</div>
-      <div class="chat-header-info">
-        <h4>Trợ lý AI — Bệnh viện Tim Hà Nội</h4>
-        <p>Hỗ trợ thông tin dịch vụ • Đặt lịch khám • BHYT</p>
+  <!-- MAIN LAYOUT -->
+  <div class="ac-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="ac-sidebar" aria-label="Dieu huong chat">
+      <span class="sb-lbl">Cau hoi nhanh</span>
+      <button class="sb-btn" data-quick="Toi muon dat lich kham benh, can lam gi?">
+        <span class="sb-icon">&#x1F4C5;</span> Dat lich kham
+      </button>
+      <button class="sb-btn" data-quick="Benh vien co nhung bac si chuyen khoa nao?">
+        <span class="sb-icon">&#x1F468;&#x200D;&#x2695;&#xFE0F;</span> Tra cuu bac si
+      </button>
+      <button class="sb-btn" data-quick="Chi phi kham benh tai benh vien la bao nhieu?">
+        <span class="sb-icon">&#x1F4B0;</span> Gia dich vu
+      </button>
+      <button class="sb-btn" data-quick="Bao hiem y te chi tra nhung dich vu nao?">
+        <span class="sb-icon">&#x1FAAA;</span> Bao hiem y te
+      </button>
+      <button class="sb-btn" data-quick="Quy trinh kham benh tai Benh vien Tim Ha Noi nhu the nao?">
+        <span class="sb-icon">&#x1F4CB;</span> Quy trinh kham
+      </button>
+      <button class="sb-btn" data-quick="Can chuan bi gi khi nhap vien dieu tri?">
+        <span class="sb-icon">&#x1F3E8;</span> Huong dan nhap vien
+      </button>
+      <button class="sb-btn" data-quick="Gio lam viec va lich kham cua benh vien?">
+        <span class="sb-icon">&#x1F550;</span> Gio lam viec
+      </button>
+      <button class="sb-btn" data-quick="Thu tuc cap cuu va cach tiep nhan benh nhan khan cap?">
+        <span class="sb-icon">&#x1F691;</span> Cap cuu
+      </button>
+
+      <span class="sb-lbl">Lien he</span>
+      <a href="booking.html" class="sb-btn"><span class="sb-icon">&#x1F4DD;</span> Dat lich truc tuyen</a>
+      <a href="contact.html" class="sb-btn"><span class="sb-icon">&#x1F4CD;</span> Dia chi benh vien</a>
+      <a href="departments.html" class="sb-btn"><span class="sb-icon">&#x1F3E5;</span> Khoa phong chuyen mon</a>
+      <a href="about.html" class="sb-btn"><span class="sb-icon">&#x2139;&#xFE0F;</span> Gioi thieu benh vien</a>
+
+      <div class="sb-emergency" aria-label="Cap cuu khan cap">
+        <p>&#x26A0;&#xFE0F; Truong hop khan cap, vui long goi ngay:</p>
+        <a href="tel:115">&#x1F6A8; Goi cap cuu 115</a>
       </div>
-    </div>
+    </aside>
 
-    <div class="chat-disclaimer">
-      ⚕️ Thông tin do AI cung cấp chỉ mang tính tham khảo. Không thay thế tư vấn y tế chuyên môn. 
-      Trong trường hợp khẩn cấp, gọi ngay <strong>115</strong> hoặc <a href="tel:19001082">19001082</a>.
-    </div>
+    <!-- CHAT MAIN -->
+    <main class="ac-main" id="main-content">
 
-    <div class="chat-messages" id="chat-messages"></div>
+      <!-- Welcome screen -->
+      <div class="chat-welcome" id="chat-welcome" aria-label="Man hinh chao mung">
+        <div class="w-av" aria-hidden="true">&#x1FAC0;</div>
+        <div>
+          <h2>Xin chao! Toi co the giup gi cho ban?</h2>
+          <p class="w-sub">Tro ly AI Cham soc Khach hang cua <strong>Benh vien Tim Ha Noi</strong>. Hoi ve lich kham, bac si, dich vu, bao hiem y te va nhieu hon nua.</p>
+        </div>
+        <div class="sug-wrap" aria-label="Cau hoi goi y">
+          <div class="sug-lbl">Goi y cau hoi</div>
+          <div class="suggested-grid" id="suggested-grid"></div>
+        </div>
+      </div>
 
-    <div class="quick-replies" id="quick-replies"></div>
+      <!-- Messages area (hidden until conversation starts) -->
+      <div class="aichat-msgs-wrap" id="aichat-msgs-wrap" style="display:none">
+        <div class="aichat-msgs-inner" id="aichat-messages" role="log" aria-live="polite" aria-label="Hoi thoai voi AI"></div>
+      </div>
 
-    <div class="chat-input-area">
-      <input type="text" class="chat-input" id="chat-input" 
-             placeholder="Nhập câu hỏi của bạn..." 
-             maxlength="2000"
-             autocomplete="off">
-      <button class="chat-send" id="chat-send" aria-label="Gửi tin nhắn">➤</button>
-    </div>
+      <!-- Quick reply chips -->
+      <div class="aqr hidden" id="aichat-quick-replies" role="group" aria-label="Cau hoi nhanh"></div>
+
+      <!-- Medical disclaimer -->
+      <div class="ac-disc">
+        &#x2695;&#xFE0F; Thong tin do AI cung cap chi mang tinh tham khao. Khong thay the tu van y te chuyen mon.
+        Khan cap: goi <strong>115</strong> hoac hotline <a href="tel:19001082">19001082</a>.
+      </div>
+
+      <!-- Input area -->
+      <div class="ac-bottom">
+        <div class="ac-input-wrap">
+          <textarea
+            id="aichat-input"
+            rows="1"
+            placeholder="Nhap cau hoi cua ban... (Enter de gui)"
+            maxlength="2000"
+            autocomplete="off"
+            aria-label="Nhap tin nhan"
+          ></textarea>
+          <button class="aichat-send" id="aichat-send" aria-label="Gui tin nhan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </main>
   </div>
 
-  <!-- Scripts -->
   <script src="js/app.js"></script>
-  <script src="js/chat.js"></script>
+  <script src="js/aichat-page.js"></script>
 </body>
 </html>

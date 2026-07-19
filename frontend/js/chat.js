@@ -23,13 +23,14 @@
     chatEndpoint: '/api/ai/chat',
     maxMessageLength: 2000,
     quickReplies: [
-      'Đặt lịch khám như thế nào?',
-      'Giờ làm việc của bệnh viện?',
-      'Bảo hiểm y tế chi trả những gì?',
-      'Các dịch vụ khám tim mạch?',
-      'Địa chỉ bệnh viện?',
-      'Tôi cần nói chuyện với nhân viên',
-      'Hủy lịch khám',
+      'Đặt lịch khám',
+      'Tra cứu bác sĩ',
+      'Giá dịch vụ',
+      'Bảo hiểm y tế',
+      'Quy trình khám',
+      'Hướng dẫn nhập viện',
+      'Giờ làm việc',
+      'Cấp cứu',
     ],
     welcomeMessage: `Xin chào! 👋 Tôi là Trợ lý AI của **Bệnh viện Tim Hà Nội**.
 
@@ -76,8 +77,18 @@ Hãy đặt câu hỏi hoặc chọn một gợi ý bên dưới!
     chatTrigger = document.createElement('button');
     chatTrigger.className = 'chat-widget-trigger';
     chatTrigger.id = 'chat-trigger';
-    chatTrigger.innerHTML = '💬';
     chatTrigger.setAttribute('aria-label', 'Mở chat AI');
+    chatTrigger.innerHTML = '<span style="font-size:1.6rem" aria-hidden="true">🫀</span><span id="chat-notif-badge" style="position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;background:#df2027;border:2px solid #fff;display:none" aria-hidden="true"></span>';
+
+    // Zalo Mini App Trigger Button
+    const zaloTrigger = document.createElement('button');
+    zaloTrigger.className = 'zalo-widget-trigger';
+    zaloTrigger.id = 'zalo-trigger';
+    zaloTrigger.setAttribute('aria-label', 'Mở Zalo Mini App');
+    zaloTrigger.innerHTML = 'Zalo';
+    zaloTrigger.onclick = () => {
+      window.open("https://zalo.me/s/2972821668579995579/", "_blank");
+    };
 
     // Chat Panel
     chatPanel = document.createElement('div');
@@ -85,27 +96,31 @@ Hãy đặt câu hỏi hoặc chọn một gợi ý bên dưới!
     chatPanel.id = 'chat-panel';
     chatPanel.innerHTML = `
       <div class="chat-header">
-        <div class="chat-header-avatar">🏥</div>
+        <div class="chat-header-avatar" style="background:linear-gradient(135deg,#005ca9,#0096d6);font-size:1.2rem" aria-hidden="true">🫀</div>
         <div class="chat-header-info">
-          <h4>Trợ lý AI</h4>
-          <p>Bệnh viện Tim Hà Nội</p>
+          <h4>Trợ lý AI Chăm sóc Khách hàng</h4>
+          <p style="display:flex;align-items:center;gap:5px"><span style="width:7px;height:7px;border-radius:50%;background:#1f8f54;display:inline-block;animation:sp 2s ease-in-out infinite" aria-hidden="true"></span> Bệnh viện Tim Hà Nội &bull; Đang hoạt động</p>
         </div>
         <button class="chat-close" id="chat-close" aria-label="Đóng chat">✕</button>
       </div>
       <div class="chat-disclaimer">
         ⚕️ Thông tin chỉ mang tính tham khảo. Không thay thế tư vấn y tế.
+        Cấp cứu: <a href="tel:115" style="color:inherit;font-weight:700">115</a>
       </div>
       <div class="chat-messages" id="chat-messages"></div>
       <div class="quick-replies" id="quick-replies"></div>
       <div class="chat-input-area">
-        <input type="text" class="chat-input" id="chat-input" 
-               placeholder="Nhập câu hỏi của bạn..." 
+        <input type="text" class="chat-input" id="chat-input"
+               placeholder="Nhập câu hỏi của bạn..."
                maxlength="${CONFIG.maxMessageLength}"
                autocomplete="off">
-        <button class="chat-send" id="chat-send" aria-label="Gửi">➤</button>
+        <button class="chat-send" id="chat-send" aria-label="Gửi">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
       </div>
     `;
 
+    document.body.appendChild(zaloTrigger);
     document.body.appendChild(chatTrigger);
     document.body.appendChild(chatPanel);
 
@@ -166,7 +181,9 @@ Hãy đặt câu hỏi hoặc chọn một gợi ý bên dưới!
     if (chatPanel) chatPanel.classList.toggle('open', isOpen);
     if (chatTrigger) {
       chatTrigger.classList.toggle('active', isOpen);
-      chatTrigger.innerHTML = isOpen ? '✕' : '💬';
+      chatTrigger.innerHTML = isOpen
+        ? '<span style="font-size:1.2rem" aria-hidden="true">✕</span>'
+        : '<span style="font-size:1.6rem" aria-hidden="true">🫀</span><span id="chat-notif-badge" style="position:absolute;top:-2px;right:-2px;width:13px;height:13px;border-radius:50%;background:#df2027;border:2px solid #fff;display:none" aria-hidden="true"></span>';
     }
 
     if (isOpen && chatMessages && chatMessages.children.length === 0) {
