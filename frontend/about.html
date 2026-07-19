@@ -8,24 +8,109 @@
   <link rel="stylesheet" href="css/hospital-design.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
 </head>
-<body>
+<body class="homepage-rebuild">
 
   <!-- Header -->
   <header class="header" id="header">
     <div class="container">
-      <a href="index.html" class="logo">
-        <div class="logo-icon">🫀</div>
-        <span>BV Tim Hà Nội</span>
-      </a>
-      <nav class="nav" id="nav">
-        <a href="index.html">Trang chủ</a>
-        <a href="departments.html">Chuyên khoa</a>
-        <a href="about.html" class="active">Giới thiệu</a>
-        <a href="contact.html">Liên hệ</a>
-        <a href="booking.html" class="nav-cta">📅 Đặt lịch</a>
-        <a href="ai-chat.html">💬 Chat AI</a>
-      </nav>
-      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+      <div class="top-utility" aria-label="Thông tin tiện ích">
+        <div><strong>Bệnh viện Tim Hà Nội</strong> - Thân thiện - Thuận tiện - Thanh lịch</div>
+        <div class="utility-right">
+          <a href="https://www.facebook.com/Benhvientimhanoi/" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">Youtube</a>
+          <a href="about.html" class="active">Giới thiệu</a>
+          <a href="contact.html">Liên hệ</a>
+        </div>
+      </div>
+
+      <div class="brand-row">
+        <a href="index.html" class="logo" aria-label="Bệnh viện Tim Hà Nội - Trang chủ">
+          <img src="https://benhvientimhanoi.vn/assets/img/bvtim_logo.png" alt="Logo Bệnh viện Tim Hà Nội">
+          <div class="logo-copy">
+            <strong>Bệnh viện Tim Hà Nội</strong>
+            <span>Vì một trái tim khỏe</span>
+          </div>
+        </a>
+
+        <div class="contact-strip" aria-label="Thông tin liên hệ nhanh">
+          <div class="contact-chip">
+            <span class="contact-chip-icon" aria-hidden="true">📅</span>
+            <div>
+              <small>Đặt lịch hẹn</small>
+              <a href="booking.html">Khám bệnh theo yêu cầu</a>
+            </div>
+          </div>
+          <div class="contact-chip">
+            <span class="contact-chip-icon" aria-hidden="true">☎</span>
+            <div>
+              <small>Tổng đài CSKH</small>
+              <a href="tel:19001082">19001082</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="mobile-menu-btn" type="button" aria-label="Mở menu">☰</button>
+
+      <div class="main-nav-wrap">
+        <nav class="nav" id="nav" aria-label="Điều hướng chính">
+          <div class="nav-item">
+            <a href="index.html"  aria-current="page">Trang chủ</a>
+          </div>
+
+          <div class="nav-item">
+            <a href="about.html" class="active">Giới thiệu</a>
+            <ul class="dropdown">
+              <li><a href="about.html" class="active">Giới thiệu chung</a></li>
+              <li><a href="about.html" class="active">Ban lãnh đạo</a></li>
+              <li><a href="about.html" class="active">Cơ cấu tổ chức</a></li>
+              <li><a href="about.html" class="active">Quá trình phát triển</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="departments.html">Dịch vụ</a>
+            <ul class="dropdown">
+              <li><a href="departments.html">Khoa khám bệnh tự nguyện</a></li>
+              <li><a href="departments.html">Chăm sóc mạch vành</a></li>
+              <li><a href="departments.html">Khám sức khỏe cá nhân - tổ chức</a></li>
+              <li><a href="ai-chat.html">Chăm sóc tại nhà</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="booking.html">Hướng dẫn khám bệnh</a>
+            <ul class="dropdown">
+              <li><a href="booking.html">Quy trình khám chữa bệnh</a></li>
+              <li><a href="ai-chat.html">Bảng giá dịch vụ</a></li>
+              <li><a href="booking.html">Hướng dẫn liên hệ đặt lịch khám</a></li>
+              <li><a href="departments.html">Lịch làm việc của bác sỹ</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="ai-chat.html">Phổ biến kiến thức</a>
+            <ul class="dropdown">
+              <li><a href="ai-chat.html">Thông tin y học</a></li>
+              <li><a href="ai-chat.html">Hiểu về tim mạch</a></li>
+              <li><a href="ai-chat.html">Dành cho người bệnh</a></li>
+              <li><a href="ai-chat.html">Kiến thức chuyên môn</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="contact.html">Thông báo</a>
+            <ul class="dropdown">
+              <li><a href="contact.html">Liên hệ chung</a></li>
+              <li><a href="https://benhvientimhanoi.vn/" target="_blank" rel="noopener noreferrer">Website chính thức</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="ai-chat.html">Chat AI</a>
+          </div>
+        </nav>
+      </div>
     </div>
   </header>
 
@@ -195,12 +280,44 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <div class="container">
-      <div class="footer-bottom">
-        © 2026 Bệnh viện Tim Hà Nội. All rights reserved. | AI-powered by Care Assistant
+      <div class="container">
+        <div class="footer-top">
+          <div class="footer-brand">
+            <img src="https://benhvientimhanoi.vn/assets/img/bvtim_logo.png" alt="Logo Bệnh viện Tim Hà Nội">
+            <h4>Bệnh viện Tim Hà Nội</h4>
+            <p>Cơ sở 1: Số 92 Trần Hưng Đạo, phường Cửa Nam, Hà Nội</p>
+            <p>Cơ sở 2: Số 695 Lạc Long Quân, phường Tây Hồ, Hà Nội</p>
+          </div>
+
+          <div class="footer-column">
+            <h4>Liên hệ</h4>
+            <p>Email: <a href="mailto:cskh@timhanoi.vn">cskh@timhanoi.vn</a></p>
+            <p>Hotline: <a href="tel:19001082">19001082 (24h/7)</a></p>
+            <p><a href="contact.html">Trang liên hệ</a></p>
+          </div>
+
+          <div class="footer-column">
+            <h4>Điều hướng</h4>
+            <p><a href="index.html">Trang chủ</a></p>
+            <p><a href="about.html">Giới thiệu</a></p>
+            <p><a href="departments.html">Chuyên khoa</a></p>
+            <p><a href="booking.html">Đặt lịch khám</a></p>
+            <p><a href="ai-chat.html">Chat AI</a></p>
+          </div>
+
+          <div class="footer-column">
+            <h4>Kết nối</h4>
+            <p><a href="https://www.facebook.com/Benhvientimhanoi/" target="_blank" rel="noopener noreferrer">Facebook</a></p>
+            <p><a href="https://benhvientimhanoi.vn/" target="_blank" rel="noopener noreferrer">Website chính thức</a></p>
+            <p><a href="https://traketqua.benhvientimhanoi.vn/" target="_blank" rel="noopener noreferrer">Trả kết quả online</a></p>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          © 2025 - Bệnh viện Tim Hà Nội
+        </div>
       </div>
-    </div>
-  </footer>
+    </footer>
 
   <script src="js/app.js"></script>
   <script src="js/chat.js"></script>
