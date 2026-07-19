@@ -37,8 +37,12 @@ catch {
 
 # 2. Khởi động ứng dụng hợp nhất
 Write-Host "`n[2/2] Khởi động website và AI API trên port 8001..." -ForegroundColor Green
-Write-Host "👉 Website: http://localhost:8001" -ForegroundColor White
-Write-Host "👉 API Docs: http://localhost:8001/docs" -ForegroundColor White
+Write-Host "👉 Website:         http://localhost:8001" -ForegroundColor White
+Write-Host "👉 Chat AI:         http://localhost:8001/ai-chat" -ForegroundColor White
+Write-Host "👉 Đặt lịch:        http://localhost:8001/booking" -ForegroundColor White
+Write-Host "👉 Tra cứu lịch:    http://localhost:8001/booking-history" -ForegroundColor White
+Write-Host "👉 Dashboard NV:    http://localhost:8001/staff-dashboard" -ForegroundColor White
+Write-Host "👉 API Docs:        http://localhost:8001/docs" -ForegroundColor White
 
 Set-Location "$ProjectPath\ai-service"
 $env:PYTHONIOENCODING="utf-8"

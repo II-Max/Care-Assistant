@@ -1,7 +1,7 @@
 # 🏥 AI Customer Care Assistant — Bệnh viện Tim Hà Nội
 
-> **Trạng thái:** `Phase 1 ✅` → `Phase 2 ✅` → `Phase 3 🔄 ĐANG THỰC HIỆN`
-> **Cập nhật lần cuối:** 18/07/2026
+> **Trạng thái:** `Phase 1 ✅ → Phase 2 ✅ → Phase 3 ✅ → Phase 4 🔄 ĐANG THỰC HIỆN`
+> **Cập nhật lần cuối:** 19/07/2026
 
 ---
 
@@ -9,42 +9,65 @@
 
 **AI Customer Care Assistant** là trợ lý chăm sóc khách hàng thông minh dành cho **Bệnh viện Tim Hà Nội** — bệnh viện chuyên khoa tim mạch hạng I, tuyến cuối của cả nước.
 
-Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải phóng nhân viên tổng đài khỏi các câu hỏi lặp lại, hỗ trợ bệnh nhân **24/7**, và **phát hiện tình huống cấp cứu tim mạch trong 1ms** — không đợi AI sinh text chậm.
+Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải phóng nhân viên tổng đài khỏi các câu hỏi lặp lại, hỗ trợ bệnh nhân **24/7**, và **phát hiện tình huống cấp cứu tim mạch tức thì** (rule-based, không đợi LLM).
 
 ---
 
 ## 🌟 Tính năng chính
 
-### ✅ Hiện tại (Phase 1)
+### ✅ Phase 1 — Foundation & Safety
 
 | Tính năng | Mô tả |
 |-----------|-------|
 | **💬 RAG AI Chatbot** | Trả lời tự động từ Knowledge Base chính thức của bệnh viện |
-| **🚨 Emergency Detection** | Phát hiện từ khóa cấp cứu (đau ngực, khó thở, ngất xỉu) → phản hồi ngay lập tức |
+| **🚨 Emergency Detection** | Rule-based: phát hiện từ khóa cấp cứu (đau ngực, khó thở, ngất xỉu) → phản hồi ngay, không đợi LLM |
 | **🛡️ Trustworthy Guardrails** | AI KHÔNG chẩn đoán, không tư vấn y khoa, không hallucination |
 | **📚 Citation bắt buộc** | Mọi câu trả lời đều có nguồn trích dẫn rõ ràng |
-| **🏥 Website y tế** | 5 trang: Trang chủ, Chat AI, Chuyên khoa, Giới thiệu, Liên hệ |
+| **🏥 Website y tế** | 8 trang: Trang chủ, Chat AI, Đặt lịch, Tra cứu lịch, Dashboard NV, Chuyên khoa, Giới thiệu, Liên hệ |
 | **🎨 Design system** | Giao diện chuyên nghiệp, mobile-first, WCAG 2.1 AA |
 
-### 🔄 Đang phát triển (Phase 3)
+### ✅ Phase 2 — Grounded RAG & Operability
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **🔍 Hybrid RAG** | Dense + BM25 + Reciprocal Rank Fusion + Cross-encoder Reranker |
+| **🗄️ ChromaDB** | Chuyển từ FAISS in-memory → ChromaDB persistent storage |
+| **📝 Knowledge Manifest** | Quản lý tài liệu có owner, approved_at, expires_at |
+| **⭐ Feedback workflow** | Người dùng đánh giá câu trả lời 1–5 sao |
+
+### ✅ Phase 3 — Booking & Hospital Integration
 
 | Tính năng | Mô tả |
 |-----------|-------|
 | **📅 Đặt lịch khám** | Booking API với idempotency, chống trùng slot |
-| **📋 Tra cứu lịch hẹn** | Tìm kiếm theo số điện thoại, hủy lịch |
+| **📋 Tra cứu lịch hẹn** | Tra cứu theo SĐT, hủy lịch từ frontend |
+| **👨‍⚕️ Staff Dashboard** | Giao diện quản lý handoff + xác nhận booking |
 | **👨‍⚕️ Handoff** | Chuyển tiếp yêu cầu phức tạp cho nhân viên |
-| **🏥 Danh sách chuyên khoa** | API departments listing |
-| **🗄️ Database** | PostgreSQL + asyncpg (fallback SQLite) |
-| **📱 Notification Queue** | Worker pattern cho Zalo/SMS/Email |
+| **🏥 Danh sách chuyên khoa** | API departments listing (7 khoa) |
+| **🗄️ Database** | PostgreSQL + asyncpg (fallback SQLite tự động) |
+| **📱 Notification Queue** | Worker pattern cho SMS/Zalo/Email + retry |
+| **🌱 Seed Data** | 7 departments, 5 doctors, 30-day schedules |
+| **☁️ Firebase Logs** | Audit, feedback, emergency logs → Firestore |
 
-### ⏳ Kế hoạch tương lai (Phase 4+)
+### 🔄 Đang phát triển (Phase 4 — ~65%)
+
+| Tính năng | Mô tả |
+|-----------|-------|
+| **🐳 Docker Compose** | ✅ Multi-service deployment (API + PostgreSQL + Redis) |
+| **📦 Dockerfile** | ✅ Multi-stage build, gunicorn, non-root user |
+| **🚀 CI/CD Pipeline** | ✅ GitHub Actions (lint → test → build → deploy) |
+| **🔒 TLS + WAF** | ❌ Bảo mật tại gateway |
+| **🔄 Backup/Restore** | ❌ Database backup có kiểm thử |
+| **📊 SLO + Alerting** | ❌ Observability & cảnh báo |
+
+### ⏳ Kế hoạch tương lai (Phase 5+)
 
 | Tính năng | Mô tả |
 |-----------|-------|
 | Auth & RBAC | OIDC/Keycloak hoặc Firebase Auth |
-| Docker + CI/CD | Production deployment |
 | Voice (STT) | Speech-to-Text cho người già |
 | HIS Integration | Kết nối hệ thống thông tin bệnh viện |
+| Analytics Dashboard | Thống kê câu hỏi, satisfaction, xu hướng bệnh |
 
 ---
 
@@ -53,15 +76,18 @@ Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải 
 | Layer | Công nghệ | Trạng thái |
 |-------|-----------|------------|
 | **Backend** | FastAPI (Python 3.10+) | ✅ Phase 1 |
-| **Frontend** | Vanilla HTML/CSS/JS | ✅ Phase 1 |
+| **Frontend** | Vanilla HTML/CSS/JS (8 pages) | ✅ Phase 1 |
 | **LLM** | meta/llama-3.1-70b-instruct (NVIDIA NIM) | ✅ Phase 1 |
-| **Embedding** | nv-embedqa-e5-v5 (NVIDIA NIM) | ✅ Phase 1 |
+| **Embedding** | nvidia/nv-embedqa-e5-v5 (NVIDIA NIM) | ✅ Phase 1 |
 | **Vector Store** | FAISS → ChromaDB (persistent) | ✅ Phase 2 |
 | **Search** | Dense → Hybrid (BM25 + RRF + reranker) | ✅ Phase 2 |
-| **Database** | PostgreSQL (asyncpg) / SQLite fallback | 🔄 Phase 3 |
-| **Booking** | API + idempotency + optimistic locking | 🔄 Phase 3 |
-| **Handoff** | Ticket-based escalation | 🔄 Phase 3 |
-| **Notification** | Queue-based (Redis worker) | 🔄 Phase 3 |
+| **Database** | PostgreSQL (asyncpg) / SQLite fallback | ✅ Phase 3 |
+| **Booking** | API + idempotency + optimistic locking | ✅ Phase 3 |
+| **Handoff** | Ticket-based escalation | ✅ Phase 3 |
+| **Staff Dashboard** | Stats overview + handoff mgmt + booking confirm | ✅ Phase 3 |
+| **Notification** | Queue-based (Redis worker + templates) | ✅ Phase 3 |
+| **Docker** | Multi-stage build + docker-compose | ✅ Phase 4 |
+| **CI/CD** | GitHub Actions (lint → test → build → deploy) | ✅ Phase 4 |
 
 ---
 
@@ -69,15 +95,17 @@ Hệ thống tích hợp trực tiếp vào website bệnh viện, giúp giải 
 
 ### 1. Yêu cầu
 - Python 3.10+
-- NVIDIA NIM API Key
+- NVIDIA NIM API Key (miễn phí tại [build.nvidia.com](https://build.nvidia.com/))
+- RAM ≥ 4GB, Disk ≥ 1GB, Có Internet
 
 ### 2. Cấu hình
-```bash
-cp .env.example .env
-```
-Mở `.env` và thêm:
-```
+File `.env` đã có sẵn ở thư mục root. Mở và điền NVIDIA_API_KEY:
+```ini
 NVIDIA_API_KEY=nvapi-xxxxxxxxxxxxx
+```
+Hoặc copy từ template:
+```powershell
+copy .env.example .env
 ```
 
 ### 3. Khởi động
@@ -86,57 +114,71 @@ NVIDIA_API_KEY=nvapi-xxxxxxxxxxxxx
 ```
 
 ### 4. Truy cập
-- **Website:** `http://localhost:8001` (FastAPI serve cả API + static)
-- **API Docs:** `http://localhost:8001/docs`
+| Giao diện | URL |
+|-----------|-----|
+| 🏠 Website chính | `http://localhost:8001` |
+| 💬 Chat AI | `http://localhost:8001/ai-chat` |
+| 📅 Đặt lịch | `http://localhost:8001/booking` |
+| 📋 Tra cứu lịch | `http://localhost:8001/booking-history` |
+| 👨‍⚕️ Dashboard NV | `http://localhost:8001/staff-dashboard` |
+| 📖 API Docs (Swagger) | `http://localhost:8001/docs` |
+| ❤️ Health Check | `http://localhost:8001/api/ai/health` |
 
 ---
 
 ## 📁 Cấu trúc project
 
 ```
-├── ai-service/              # 🚀 Backend (FastAPI)
-│   ├── main.py             # Entry point
-│   ├── config.py           # Settings
-│   ├── models/             # Pydantic schemas
-│   ├── database/           # 🗄️ PostgreSQL + SQLite fallback
-│   │   ├── connection.py   # asyncpg pool manager
-│   │   └── models.py       # Data models (appointments, users, ...)
-│   ├── rag/                # 🔍 RAG pipeline
-│   │   ├── document_loader.py
-│   │   ├── chunker.py
-│   │   ├── embedder.py
-│   │   ├── vector_store.py
-│   │   ├── bm25_search.py
-│   │   ├── hybrid_retriever.py
-│   │   └── retriever.py
-│   └── services/           # ⚙️ Business logic
-│       ├── emergency_detector.py
-│       ├── chat_service.py
-│       ├── rate_limiter.py
-│       ├── booking_service.py   # 📅 Đặt lịch khám
-│       ├── handoff_service.py   # 👨‍⚕️ Chuyển tiếp nhân viên
-│       └── firebase/            # ☁️ Firebase integration
-│           ├── client.py
-│           └── schemas.py
-├── frontend/               # 🎨 Giao diện
-│   ├── index.html, ai-chat.html
-│   ├── booking.html, departments.html
-│   ├── contact.html, about.html
+Care-Assistant/
+├── ai-service/                 # 🚀 Backend (FastAPI)
+│   ├── main.py                # Entry point + tất cả API routes
+│   ├── config.py              # Settings (load .env từ project root)
+│   ├── requirements.txt       # Python dependencies
+│   ├── models/schemas.py      # Pydantic schemas
+│   ├── database/              # 🗄️ Database layer
+│   │   ├── connection.py      # asyncpg pool / SQLite fallback manager
+│   │   ├── models.py          # Data models (Appointment, Doctor, ...)
+│   │   ├── migrations/        # SQL migration scripts
+│   │   │   ├── 001_initial_schema.sql
+│   │   │   └── 002_seed_data.sql
+│   │   └── run_migrations.py  # Auto-migration runner (tự chạy khi startup)
+│   ├── rag/                   # 🔍 RAG pipeline
+│   │   ├── document_loader.py # Load từ knowledge/approved/
+│   │   ├── chunker.py         # Semantic chunking (400 tokens, overlap 50)
+│   │   ├── embedder.py        # NVIDIA NIM embedding
+│   │   ├── vector_store.py    # ChromaDB (persistent)
+│   │   ├── bm25_search.py     # BM25 sparse index
+│   │   ├── hybrid_retriever.py # Dense + BM25 + RRF + Reranker
+│   │   └── retriever.py       # Unified retriever interface
+│   └── services/              # ⚙️ Business logic
+│       ├── chat_service.py    # 💬 Core LLM chat (NVIDIA NIM)
+│       ├── emergency_detector.py # 🚨 Rule-based fail-safe detection
+│       ├── rate_limiter.py    # 🛡️ 10 req/min/IP (sliding window)
+│       ├── booking_service.py # 📅 Booking + idempotency
+│       ├── handoff_service.py # 👨‍⚕️ Staff escalation tickets
+│       ├── staff_dashboard.py # 📊 Dashboard stats & management
+│       ├── notification_worker.py # 📬 SMS/Zalo/Email queue worker
+│       └── firebase/          # ☁️ Firebase integration (offline-safe)
+├── frontend/                  # 🎨 8 trang giao diện
+│   ├── index.html             # Trang chủ
+│   ├── ai-chat.html           # Chat AI
+│   ├── booking.html           # Đặt lịch khám
+│   ├── booking-history.html   # Tra cứu & hủy lịch hẹn
+│   ├── staff-dashboard.html   # Dashboard nhân viên
+│   ├── departments.html       # Danh sách chuyên khoa
+│   ├── about.html             # Giới thiệu bệnh viện
+│   ├── contact.html           # Liên hệ
 │   ├── css/hospital-design.css
 │   └── js/chat.js, app.js
-├── knowledge/
-│   └── approved/           # 📚 Knowledge Base chính thức
-│       ├── gioi-thieu-benh-vien.md
-│       ├── dich-vu-kham-chua-benh.md
-│       └── lien-he-dat-lich.md
-├── Data/                   # Raw data (archive)
-├── tests/                  # 🧪 Unit tests
-├── plans/                  # 📋 Kế hoạch phát triển
-│   ├── roadmap.md          # Lộ trình tổng thể
-│   ├── phase2-progress.md  # Theo dõi Phase 2
-│   └── architecture-ai.md  # Kiến trúc hệ thống
-├── start.ps1               # 🚀 Khởi động
-├── UPDATE.md               # Lộ trình nâng cấp
+├── knowledge/approved/        # 📚 Knowledge Base chính thức
+├── tests/                     # 🧪 Unit tests (5 safety tests)
+├── plans/                     # 📋 Kế hoạch phát triển
+├── .github/workflows/ci.yml   # 🚀 CI/CD Pipeline
+├── docker-compose.yml         # 🐳 3 services: API + DB + Redis
+├── Dockerfile                 # 📦 Multi-stage production build
+├── .dockerignore              # Build context filter
+├── start.ps1                  # 🚀 Local startup script
+├── UPDATE.md                  # Lộ trình nâng cấp
 └── README.md
 ```
 

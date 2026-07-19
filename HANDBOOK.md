@@ -1,6 +1,6 @@
 # 📘 HANDBOOK — Hướng dẫn vận hành AI Customer Care Assistant
 
-> **Phiên bản:** `v1.2.0` **|** **Cập nhật:** `18/07/2026`
+> **Phiên bản:** `v1.3.0` **|** **Cập nhật:** `19/07/2026`
 > **Hệ thống:** AI Customer Care Assistant — Bệnh viện Tim Hà Nội
 
 ---
@@ -30,9 +30,16 @@
 | **🚨 Phát hiện cấp cứu** | Nhận diện từ khóa nguy hiểm → phản hồi tức thì (< 1ms) | `✅ Phase 1` |
 | **📚 Citation bắt buộc** | Mọi câu trả lời đều có nguồn trích dẫn | `✅ Phase 1` |
 | **🔍 Hybrid RAG** | Dense + BM25 + Reranker cho độ chính xác cao | `✅ Phase 2` |
-| **📅 Đặt lịch khám** | API booking + idempotency + optimistic locking | `🔄 Phase 3` |
-| **👨‍⚕️ Handoff** | Chuyển yêu cầu phức tạp cho nhân viên | `🔄 Phase 3` |
-| **☁️ Firebase logs** | Audit, feedback, emergency logs | `🔄 Phase 3` |
+| **📅 Đặt lịch khám** | API booking + idempotency + optimistic locking | `✅ Phase 3` |
+| **📋 Tra cứu lịch hẹn** | Tra cứu SĐT, hủy lịch | `✅ Phase 3` |
+| **👨‍⚕️ Staff Dashboard** | Stats + handoff mgmt + booking confirm | `✅ Phase 3` |
+| **👨‍⚕️ Handoff** | Chuyển yêu cầu phức tạp cho nhân viên | `✅ Phase 3` |
+| **📬 Notification Worker** | SMS/Zalo/Email queue + retry | `✅ Phase 3` |
+| **🌱 Seed Data** | 7 depts, 5 doctors, 30-day schedules | `✅ Phase 3` |
+| **☁️ Firebase logs** | Audit, feedback, emergency logs | `✅ Phase 3` |
+| **🐳 Docker Compose** | Multi-service (API + DB + Redis) | `✅ Phase 4` |
+| **🐳 Dockerfile** | Production multi-stage build | `✅ Phase 4` |
+| **🚀 CI/CD Pipeline** | GitHub Actions full pipeline | `✅ Phase 4` |
 
 ---
 
@@ -66,17 +73,23 @@
 # Bước 1: Clone và cấu hình
 git clone <repository-url>
 cd Care-Assistant
-copy .\env.example.txt .\ai-service\.env
-# Sau đó sửa file .env: điền NVIDIA_API_KEY của bạn
+# File .env đã có sẵn ở root — chỉ cần điền NVIDIA_API_KEY
+# Hoặc copy từ template:
+copy .env.example .env
 
 # Bước 2: Cài dependencies
 pip install -r .\ai-service\requirements.txt
 
-# Bước 3: Chạy
+# Bước 3: Chạy (local development)
 .\start.ps1
+
+# Hoặc chạy với Docker (production-like)
+# docker-compose up -d
 ```
 
 ### 🔹 Cấu hình `.env` chi tiết
+
+> **Vị trí file:** `.env` nằm ở **project root** (không phải trong `ai-service/`). `config.py` tự load từ đó.
 
 ```ini
 # === 🎯 BẮT BUỘC ===
@@ -84,9 +97,11 @@ NVIDIA_API_KEY=nvapi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
 # === 🔧 TÙY CHỌN (đã có giá trị mặc định) ===
 NVIDIA_MODEL=meta/llama-3.1-70b-instruct
+NVIDIA_EMBED_MODEL=nvidia/nv-embedqa-e5-v5
+NVIDIA_BASE_URL=https://integrate.api.nvidia.com/v1
 AI_SERVICE_PORT=8001
 CHAT_RATE_LIMIT_PER_MINUTE=10
-SIMILARITY_THRESHOLD=0.35
+SIMILARITY_THRESHOLD=0.60
 
 # === 🗄️ DATABASE (optional - fallback SQLite nếu không có) ===
 DB_HOST=localhost
@@ -118,7 +133,7 @@ FIREBASE_CREDENTIALS_PATH=C:\path\to\serviceAccountKey.json
 Khi chạy `start.ps1` hoặc `python main.py`, hệ thống thực hiện theo thứ tự:
 
 ```
-Step 1: 📁 Load documents       → Load từ knowledge/approved/ (3 files)
+Step 1: 📁 Load documents       → Load từ knowledge/approved/ (3 file .md)
           ↓
 Step 2: ✂️  Chunk documents     → Semantic chunking (400 tokens, overlap 50)
           ↓
@@ -126,11 +141,16 @@ Step 3: 🧮 Build vector index   → Embed via NVIDIA NIM → ChromaDB (persist
           ↓
 Step 3b: 🔤 Build BM25 index    → TF-IDF sparse index cho hybrid search
           ↓
+Step 3c: 🔀 Enable Hybrid       → Dense + BM25 + RRF + Reranker mode
+          ↓
 Step 4: 🗄️  Init Database       → PostgreSQL (asyncpg) → fallback SQLite
+          ↓  🔄 Run Migrations  → Tự động chạy 001 + 002 SQL
           ↓
 Step 4b: ☁️  Init Firebase      → Firestore client → fallback offline mode
           ↓
 Step 5: 🔧 Init Services        → Emergency Detector + Chat Service (LLM)
+          ↓
+Step 5b: 📨 Notification Worker → Khởi tạo queue worker (SMS/Zalo/Email)
           ↓
 ✅ AI Service READY             → Port 8001
 ```
@@ -208,6 +228,16 @@ User message
 | `POST` | `/api/ai/handoff` | 👨‍⚕️ Chuyển tiếp NV | `{"conversation_id":"...", "reason":"beyond_capability", "risk_level":"LOW"}` |
 | `GET` | `/api/ai/departments` | 🏥 Danh sách khoa | — |
 
+### Staff Dashboard (Phase 3)
+
+| Method | Endpoint | Mô tả |
+|:------:|----------|-------|
+| `GET` | `/api/ai/dashboard/stats` | 📊 Thống kê tổng quan |
+| `GET` | `/api/ai/dashboard/handoffs` | 📋 Danh sách handoff tickets |
+| `GET` | `/api/ai/dashboard/handoffs/{id}` | 📄 Chi tiết ticket |
+| `GET` | `/api/ai/dashboard/bookings` | 📅 Booking chờ xác nhận |
+| `POST` | `/api/ai/dashboard/bookings/{id}/confirm` | ✅ Xác nhận booking |
+
 ### Ví dụ curl
 
 ```bash
@@ -235,6 +265,21 @@ curl http://localhost:8001/api/ai/departments
 curl -X POST http://localhost:8001/api/ai/booking \
   -H "Content-Type: application/json" \
   -d '{"patient_name":"Nguyễn Văn A","patient_phone":"0912345678","department_id":"noi-khoa","booking_date":"2026-07-20","booking_time":"08:00","symptoms":"Đau ngực trái"}'
+
+# 6. Tra cứu lịch hẹn theo SĐT
+curl "http://localhost:8001/api/ai/booking/lookup?phone=0912345678"
+
+# 7. Chi tiết lịch hẹn
+curl "http://localhost:8001/api/ai/booking/apt_1234567890_abcd1234"
+
+# 8. Staff Dashboard: thống kê
+curl http://localhost:8001/api/ai/dashboard/stats
+
+# 9. Staff Dashboard: danh sách handoff
+curl http://localhost:8001/api/ai/dashboard/handoffs
+
+# 10. Staff Dashboard: booking chờ xác nhận
+curl http://localhost:8001/api/ai/dashboard/bookings
 ```
 
 ---
@@ -262,6 +307,15 @@ curl -X POST http://localhost:8001/api/ai/booking \
 | `DB_USER` | `app_user` | ❌ | Database user |
 | `DB_PASSWORD` | — | ❌ | Database password |
 | `FIREBASE_CREDENTIALS_PATH` | — | ❌ | Path tới `serviceAccountKey.json` |
+| `SMS_API_URL` | — | ❌ | SMS provider API endpoint |
+| `SMS_API_KEY` | — | ❌ | SMS API key |
+| `ZALO_OA_TOKEN` | — | ❌ | Zalo OA access token |
+| `SMTP_HOST` | — | ❌ | SMTP server cho email |
+| `SMTP_PORT` | `587` | ❌ | SMTP port |
+| `SMTP_USER` | — | ❌ | SMTP username |
+| `SMTP_PASSWORD` | — | ❌ | SMTP password |
+| `SMTP_FROM` | `cskh@timhanoi.vn` | ❌ | Email người gửi |
+| `FRONTEND_URL` | `http://localhost:8000` | ❌ | URL frontend cho OAuth callback |
 
 ### Tham số điều chỉnh (hard-coded trong source)
 
@@ -294,6 +348,8 @@ curl -X POST http://localhost:8001/api/ai/booking \
 |-----|-------------|-----------|
 | `❌ LLM call failed` | NVIDIA API timeout/key sai | Kiểm tra `NVIDIA_API_KEY` và internet |
 | `❌ Booking error` | DB lỗi hoặc Firebase offline | Gọi hotline 19001082 thủ công |
+| `❌ Dashboard not loading` | API dashboard endpoints lỗi | Kiểm tra logs `❌ Dashboard stats error` |
+| `❌ Migration failed` | SQL syntax hoặc DB connection | Chạy thủ công: `cd ai-service && python database/run_migrations.py` |
 | `429 Too Many Requests` | Vượt rate limit | Đợi 1 phút hoặc tăng `CHAT_RATE_LIMIT_PER_MINUTE` |
 
 ### ⚡ Kiểm tra nhanh hệ thống
@@ -389,6 +445,12 @@ Trước khi deploy lên production, cần kiểm tra:
 | 8 | **Graceful degradation** | Tắt Firebase → service vẫn chạy | `☐` |
 | 9 | **Graceful degradation** | Tắt PostgreSQL → fallback SQLite | `☐` |
 | 10 | **Idempotency** | Gửi booking 2 lần → chỉ tạo 1 record | `☐` |
+| 11 | **Handoff ticket** | Gửi yêu cầu hỗ trợ → xuất hiện trong dashboard | `☐` |
+| 12 | **Booking confirm** | Staff confirm booking → trạng thái thay đổi | `☐` |
+| 13 | **Lookup by phone** | Tra cứu SĐT → hiển thị danh sách lịch hẹn | `☐` |
+| 14 | **Cancel booking** | Hủy lịch từ frontend → trạng thái cancelled | `☐` |
+| 15 | **Notification queue** | Tạo booking → notification enqueue | `☐` |
+| 16 | **Docker health check** | `docker-compose ps` → all services healthy | `☐` |
 
 ---
 
@@ -439,15 +501,16 @@ Sửa `AI_SERVICE_PORT=8002` trong `.env` và restart.
 📦 Care-Assistant
 ├── 📂 ai-service/                    # Backend
 │   ├── main.py                      # Entry point, API routes
-│   ├── config.py                    # Settings (.env load)
+│   ├── config.py                    # Settings (load .env từ project root)
 │   ├── 📂 rag/                      # RAG pipeline
 │   ├── 📂 services/                 # Business logic
 │   ├── 📂 database/                 # DB connection + migrations
 │   └── requirements.txt             # Python dependencies
-├── 📂 frontend/                     # Frontend (6 pages)
-├── 📂 knowledge/approved/           # Knowledge Base
+├── 📂 frontend/                     # Frontend (8 pages)
+├── 📂 knowledge/approved/           # Knowledge Base (3 .md + manifest.json)
 ├── 📂 tests/                        # Unit tests
-├── start.ps1                        # Startup script
+├── start.ps1                        # Startup script (Windows PowerShell)
+├── .env                             # ← Cấu hình tại đây (NVIDIA_API_KEY)
 └── .env.example                     # Template env file
 ```
 

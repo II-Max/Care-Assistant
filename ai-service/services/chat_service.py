@@ -21,6 +21,7 @@ from openai import AsyncOpenAI
 
 from config import settings
 from rag.retriever import retriever
+from services.web_search import search_web
 from services.emergency_detector import emergency_detector
 from models.schemas import ChatResponse, Source
 
@@ -56,22 +57,24 @@ QUY TẮC BẮT BUỘC (PHẢI TUÂN THỦ TUYỆT ĐỐI):
 
 4. Nếu câu hỏi liên quan đến triệu chứng bệnh hoặc tình trạng sức khỏe → khuyên gặp bác sĩ, KHÔNG tư vấn y tế.
 
-5. Luôn trả lời bằng tiếng Việt, lịch sự, chuyên nghiệp, ngắn gọn và đi thẳng vào vấn đề.
+5. **NẾU CÓ THÔNG TIN TỪ INTERNET TRONG CONTEXT:** Bạn được phép sử dụng thông tin từ Internet để trả lời các câu hỏi chung (ví dụ: chi phí, thời gian làm việc). Bắt buộc phải ghi chú rõ "Theo thông tin từ Internet..." ở câu trả lời.
 
-6. **Tự động sửa lỗi NLP:** Dùng khả năng suy luận ngữ cảnh để hiểu ý người dùng nếu họ viết sai chính tả.
+6. Luôn trả lời bằng tiếng Việt, lịch sự, chuyên nghiệp, ngắn gọn và đi thẳng vào vấn đề.
 
-7. **BẮT BUỘC TRẢ VỀ JSON:** Mọi phản hồi của bạn phải theo định dạng JSON sau, không được kèm bất kỳ chữ nào bên ngoài JSON:
+7. **Tự động sửa lỗi NLP:** Dùng khả năng suy luận ngữ cảnh để hiểu ý người dùng nếu họ viết sai chính tả.
+
+8. **BẮT BUỘC TRẢ VỀ JSON:** Mọi phản hồi của bạn phải theo định dạng JSON sau, không được kèm bất kỳ chữ nào bên ngoài JSON:
 {{
     "risk_level": "LOW",  // LOW (câu hỏi thường), MEDIUM (hỏi triệu chứng), HIGH (cấp cứu)
     "handoff_required": false, // True nếu vượt quá khả năng hoặc cần bác sĩ tư vấn
     "answer": "Câu trả lời của bạn, chứa thông tin liên hệ và disclaimer ở cuối."
 }}
 
-8. Khi cung cấp thông tin liên hệ:
+9. Khi cung cấp thông tin liên hệ:
    - Hotline đặt khám: 19001082 | CSKH: 0837091082 / 0836761082
    - Đặt khám online: https://benhvientimhanoi.vn/he-thong/hen-kham/index.html
 
-9. Cuối mỗi `answer`, LUÔN thêm disclaimer:
+10. Cuối mỗi `answer`, LUÔN thêm disclaimer:
    "📋 *Thông tin này chỉ mang tính tham khảo. Vui lòng liên hệ bệnh viện để được tư vấn chính xác.*"
 
 CONTEXT:
@@ -189,9 +192,20 @@ class ChatService:
         # Step 3: Build Context & Call LLM
         # ============================
         if not results:
-            context = "KHÔNG CÓ THÔNG TIN. Hãy khuyên bệnh nhân liên hệ tổng đài."
-            sources = []
-            max_score = 0.0
+            logger.info("Không tìm thấy trong Local RAG, chuyển sang Web Search...")
+            web_context = search_web(message)
+            if web_context:
+                context = f"[THÔNG TIN TỪ INTERNET]\n{web_context}"
+                sources = [Source(
+                    title="DuckDuckGo Search",
+                    url="https://duckduckgo.com",
+                    snippet=web_context[:200]
+                )]
+            else:
+                context = "KHÔNG CÓ THÔNG TIN. Hãy khuyên bệnh nhân liên hệ tổng đài."
+                sources = []
+            
+            max_score = 0.5  # Fixed score for web search
             retrieval_count = 0
         else:
             context = retriever.build_context(results)

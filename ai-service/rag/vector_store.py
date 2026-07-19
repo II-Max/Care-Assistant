@@ -67,15 +67,17 @@ class VectorStore:
                 settings=ChromaSettings(anonymized_telemetry=False)
             )
 
-            try:
-                self._client.delete_collection(COLLECTION_NAME)
-            except Exception:
-                pass
-
-            self._collection = self._client.create_collection(
+            self._collection = self._client.get_or_create_collection(
                 name=COLLECTION_NAME,
                 metadata={"hnsw:space": "cosine"}
             )
+            
+            # Clear old data if any (since we rebuild on startup)
+            existing_count = self._collection.count()
+            if existing_count > 0:
+                existing_data = self._collection.get()
+                if existing_data and existing_data["ids"]:
+                    self._collection.delete(ids=existing_data["ids"])
 
             texts = [chunk.embedding_text for chunk in chunks]
             logger.info(f"Dang tao embeddings cho {len(chunks)} chunks...")

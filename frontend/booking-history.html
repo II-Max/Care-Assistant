@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Tra cứu lịch sử đặt lịch khám tại Bệnh viện Tim Hà Nội">
+  <title>Tra cứu lịch hẹn — Bệnh viện Tim Hà Nội</title>
+  <link rel="stylesheet" href="css/hospital-design.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>">
+  <style>
+    .lookup-container {
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .lookup-form {
+      background: #fff;
+      border-radius: var(--border-radius);
+      padding: var(--space-8);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+      text-align: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .lookup-form h2 {
+      margin-bottom: var(--space-2);
+    }
+
+    .lookup-form .form-subtitle {
+      color: var(--gray-600);
+      margin-bottom: var(--space-6);
+      font-size: var(--font-size-sm);
+    }
+
+    .lookup-input-group {
+      display: flex;
+      gap: var(--space-3);
+      max-width: 450px;
+      margin: 0 auto;
+    }
+
+    .lookup-input-group .form-control {
+      flex: 1;
+      text-align: center;
+      font-size: var(--font-size-lg);
+      padding: var(--space-4);
+    }
+
+    .lookup-input-group .btn {
+      padding: var(--space-4) var(--space-6);
+      white-space: nowrap;
+    }
+
+    @media (max-width: 480px) {
+      .lookup-input-group {
+        flex-direction: column;
+      }
+    }
+
+    /* Appointment Cards */
+    .appointment-card {
+      background: #fff;
+      border-radius: var(--border-radius);
+      padding: var(--space-5);
+      box-shadow: var(--shadow-sm);
+      border: 1px solid var(--gray-200);
+      margin-bottom: var(--space-4);
+      display: flex;
+      gap: var(--space-5);
+      align-items: flex-start;
+      transition: all var(--transition-base);
+    }
+
+    .appointment-card:hover {
+      box-shadow: var(--shadow-md);
+      border-color: var(--primary-200);
+    }
+
+    .appointment-status-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--border-radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .appointment-status-icon.pending { background: var(--warning-bg); }
+    .appointment-status-icon.confirmed { background: var(--success-bg); }
+    .appointment-status-icon.cancelled { background: var(--danger-bg); }
+    .appointment-status-icon.completed { background: var(--info-bg); }
+
+    .appointment-info {
+      flex: 1;
+    }
+
+    .appointment-info h4 {
+      font-size: var(--font-size-md);
+      margin-bottom: var(--space-1);
+    }
+
+    .appointment-info .appointment-meta {
+      font-size: var(--font-size-sm);
+      color: var(--gray-600);
+      line-height: 1.8;
+    }
+
+    .appointment-info .appointment-meta span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-right: var(--space-4);
+    }
+
+    .appointment-status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .appointment-status-badge.pending {
+      background: var(--warning-bg);
+      color: #856404;
+    }
+
+    .appointment-status-badge.confirmed {
+      background: var(--success-bg);
+      color: #155724;
+    }
+
+    .appointment-status-badge.cancelled {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .appointment-status-badge.completed {
+      background: var(--info-bg);
+      color: var(--primary-600);
+    }
+
+    .appointment-actions {
+      display: flex;
+      gap: var(--space-2);
+      margin-top: var(--space-3);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: var(--space-10);
+      color: var(--gray-500);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 56px;
+      margin-bottom: var(--space-4);
+    }
+
+    .error-state {
+      text-align: center;
+      padding: var(--space-8);
+      color: var(--danger);
+    }
+
+    /* Cancel Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #fff;
+      border-radius: var(--border-radius);
+      max-width: 450px;
+      width: 90%;
+      padding: var(--space-6);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .modal h3 { margin-bottom: var(--space-4); }
+    .modal-close {
+      float: right;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--gray-500);
+    }
+    .modal textarea {
+      width: 100%;
+      min-height: 80px;
+      margin-bottom: var(--space-4);
+    }
+    .modal .btn-group {
+      display: flex;
+      gap: var(--space-3);
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🫀</div>
+        <span>BV Tim Hà Nội</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="departments.html">Chuyên khoa</a>
+        <a href="about.html">Giới thiệu</a>
+        <a href="contact.html">Liên hệ</a>
+        <a href="booking.html">📅 Đặt lịch</a>
+        <a href="booking-history.html" class="active">🔍 Tra cứu</a>
+        <a href="ai-chat.html">💬 Chat AI</a>
+      </nav>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <section class="page-header">
+    <div class="container">
+      <h1>🔍 Tra cứu lịch hẹn</h1>
+      <p>Nhập số điện thoại để xem lịch sử đặt lịch khám của bạn</p>
+    </div>
+  </section>
+
+  <!-- Content -->
+  <section class="page-content">
+    <div class="container">
+      <div class="lookup-container">
+
+        <!-- Lookup Form -->
+        <div class="lookup-form">
+          <h2>📞 Nhập số điện thoại</h2>
+          <p class="form-subtitle">Số điện thoại bạn đã dùng khi đặt lịch khám</p>
+
+          <div class="lookup-input-group">
+            <input type="tel" id="lookup-phone" class="form-control" 
+                   placeholder="09xxxxxxxx" maxlength="15"
+                   autocomplete="tel">
+            <button class="btn btn-primary btn-lg" onclick="lookupAppointments()">🔍 Tra cứu</button>
+          </div>
+          <p id="lookup-error" style="color: var(--danger); font-size: var(--font-size-sm); margin-top: var(--space-3); display: none;">Vui lòng nhập số điện thoại hợp lệ.</p>
+        </div>
+
+        <!-- Results -->
+        <div id="results-container">
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <p>Nhập số điện thoại để tra cứu lịch hẹn của bạn.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Cancel Modal -->
+  <div class="modal-overlay" id="cancel-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeCancelModal()">✕</button>
+      <h3>❌ Hủy lịch hẹn</h3>
+      <p style="color: var(--gray-600); margin-bottom: var(--space-4);">Bạn có chắc muốn hủy lịch hẹn này?</p>
+      <label style="font-weight: 600; font-size: var(--font-size-sm);">Lý do hủy (không bắt buộc)</label>
+      <textarea id="cancel-reason" class="form-control" placeholder="Nhập lý do hủy..." maxlength="500"></textarea>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeCancelModal()">Quay lại</button>
+        <button class="btn btn-danger" id="confirm-cancel-btn" onclick="confirmCancel()">✓ Xác nhận hủy</button>
+      </div>
+      <input type="hidden" id="cancel-appointment-id">
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <h4>🫀 Bệnh viện Tim Hà Nội</h4>
+          <p>Bệnh viện chuyên khoa Tim mạch hạng I, trực thuộc Sở Y tế Hà Nội.</p>
+          <p>📧 <a href="mailto:cskh@timhanoi.vn">cskh@timhanoi.vn</a><br>
+             📞 <a href="tel:19001082">19001082</a></p>
+        </div>
+        <div>
+          <h4>Trang</h4>
+          <p><a href="index.html">Trang chủ</a></p>
+          <p><a href="departments.html">Chuyên khoa</a></p>
+          <p><a href="about.html">Giới thiệu</a></p>
+          <p><a href="contact.html">Liên hệ</a></p>
+        </div>
+        <div>
+          <h4>Dịch vụ</h4>
+          <p><a href="ai-chat.html">Chat AI</a></p>
+          <p><a href="booking.html">Đặt lịch khám</a></p>
+          <p><a href="booking-history.html" class="active">Tra cứu lịch hẹn</a></p>
+        </div>
+        <div>
+          <h4>Địa chỉ</h4>
+          <p>CS1: 92 Trần Hưng Đạo, Cửa Nam, HN</p>
+          <p>CS2: 695 Lạc Long Quân, Tây Hồ, HN</p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2026 Bệnh viện Tim Hà Nội. All rights reserved. | AI-powered by Care Assistant
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/app.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      const API_URL = window.AI_API_URL || 'http://localhost:8001';
+      let currentAppointments = [];
+
+      // ========================
+      // Lookup
+      // ========================
+      window.lookupAppointments = async function() {
+        const phoneInput = document.getElementById('lookup-phone');
+        const phone = phoneInput.value.trim().replace(/\D/g, '');
+        const errorEl = document.getElementById('lookup-error');
+
+        if (phone.length < 10) {
+          errorEl.style.display = 'block';
+          phoneInput.focus();
+          return;
+        }
+
+        errorEl.style.display = 'none';
+        const container = document.getElementById('results-container');
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">⏳</div><p>Đang tra cứu...</p></div>';
+
+        try {
+          const response = await fetch(`${API_URL}/api/ai/booking/lookup?phone=${encodeURIComponent(phone)}`);
+          const data = await response.json();
+
+          if (data.success && data.appointments && data.appointments.length > 0) {
+            currentAppointments = data.appointments;
+            renderAppointments(data.appointments);
+          } else {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3 style="margin-bottom: var(--space-2);">Không tìm thấy lịch hẹn</h3>
+                <p>Không có lịch hẹn nào với số điện thoại <strong>${escapeHtml(phone)}</strong>.</p>
+                <p style="margin-top: var(--space-4);">
+                  <a href="booking.html" class="btn btn-primary">📅 Đặt lịch ngay</a>
+                </p>
+              </div>
+            `;
+          }
+        } catch (error) {
+          console.error('Lookup error:', error);
+          container.innerHTML = `
+            <div class="error-state">
+              <div style="font-size: 48px; margin-bottom: var(--space-4);">❌</div>
+              <h3 style="margin-bottom: var(--space-2);">Lỗi kết nối</h3>
+              <p>Hệ thống đang gặp sự cố. Vui lòng thử lại sau.</p>
+            </div>
+          `;
+        }
+      };
+
+      // ========================
+      // Render Appointments
+      // ========================
+      function renderAppointments(appointments) {
+        const container = document.getElementById('results-container');
+
+        let html = `<div style="margin-bottom: var(--space-4);">
+          <h3>📋 Lịch sử đặt hẹn (${appointments.length})</h3>
+        </div>`;
+
+        appointments.forEach(apt => {
+          const status = apt.status || 'pending';
+          const statusLabels = {
+            'pending': 'Chờ xác nhận',
+            'confirmed': 'Đã xác nhận',
+            'cancelled': 'Đã hủy',
+            'completed': 'Đã khám',
+            'no_show': 'Không đến'
+          };
+          const statusLabel = statusLabels[status] || status;
+
+          html += `
+            <div class="appointment-card">
+              <div class="appointment-status-icon ${status}">
+                ${status === 'pending' ? '⏳' : status === 'confirmed' ? '✅' : status === 'cancelled' ? '❌' : status === 'completed' ? '✔️' : '❓'}
+              </div>
+              <div class="appointment-info">
+                <h4>${escapeHtml(apt.patient_name || '—')}</h4>
+                <div class="appointment-meta">
+                  <span>📅 ${escapeHtml(apt.booking_date || '—')}</span>
+                  <span>⏰ ${escapeHtml(apt.booking_time || '—')}</span>
+                  <span>🏥 ${escapeHtml(apt.department_id || '—')}</span>
+                </div>
+                <div>
+                  <span class="appointment-status-badge ${status}">${statusLabel}</span>
+                </div>
+                <div class="appointment-actions">
+                  ${status === 'pending' || status === 'confirmed' ? `
+                    <button class="btn btn-danger btn-sm" onclick="openCancelModal('${apt.appointment_id}')">❌ Hủy lịch</button>
+                  ` : ''}
+                  <button class="btn btn-secondary btn-sm" onclick="viewDetail('${apt.appointment_id}')">Xem chi tiết</button>
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        html += `
+          <div style="text-align: center; margin-top: var(--space-6);">
+            <a href="booking.html" class="btn btn-primary">📅 Đặt lịch mới</a>
+          </div>
+        `;
+
+        container.innerHTML = html;
+      }
+
+      // ========================
+      // Cancel Booking
+      // ========================
+      window.openCancelModal = function(appointmentId) {
+        document.getElementById('cancel-appointment-id').value = appointmentId;
+        document.getElementById('cancel-reason').value = '';
+        document.getElementById('cancel-modal').classList.add('open');
+      };
+
+      window.closeCancelModal = function() {
+        document.getElementById('cancel-modal').classList.remove('open');
+      };
+
+      window.confirmCancel = async function() {
+        const appointmentId = document.getElementById('cancel-appointment-id').value;
+        const reason = document.getElementById('cancel-reason').value.trim();
+        const btn = document.getElementById('confirm-cancel-btn');
+        
+        btn.disabled = true;
+        btn.textContent = '⏳ Đang xử lý...';
+
+        try {
+          const response = await fetch(`${API_URL}/api/ai/booking/${appointmentId}/cancel`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason: reason })
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            alert('✅ Đã hủy lịch hẹn thành công!');
+            closeCancelModal();
+            // Re-run lookup
+            window.lookupAppointments();
+          } else {
+            alert('❌ ' + (data.message || 'Lỗi hủy lịch.'));
+          }
+        } catch (error) {
+          console.error('Cancel error:', error);
+          alert('❌ Lỗi kết nối. Vui lòng thử lại.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '✓ Xác nhận hủy';
+        }
+      };
+
+      // ========================
+      // View Detail
+      // ========================
+      window.viewDetail = async function(appointmentId) {
+        try {
+          const response = await fetch(`${API_URL}/api/ai/booking/${appointmentId}`);
+          const data = await response.json();
+
+          if (data.success && data.appointment) {
+            const a = data.appointment;
+            const statusLabels = {
+              'pending': 'Chờ xác nhận',
+              'confirmed': 'Đã xác nhận',
+              'cancelled': 'Đã hủy',
+              'completed': 'Đã khám',
+              'no_show': 'Không đến'
+            };
+            const statusLabel = statusLabels[a.status] || a.status;
+
+            const details = [
+              ['🆔 Mã lịch hẹn', a.appointment_id],
+              ['👤 Tên bệnh nhân', a.patient_name],
+              ['📞 Số điện thoại', a.patient_phone],
+              ['📅 Ngày khám', a.booking_date],
+              ['⏰ Giờ khám', a.booking_time],
+              ['🏥 Khoa', a.department_id],
+              ['📋 Trạng thái', statusLabel]
+            ];
+
+            let detailHtml = '<dl style="display: grid; grid-template-columns: auto 1fr; gap: var(--space-3) var(--space-4); font-size: 14px;">';
+            details.forEach(([label, value]) => {
+              detailHtml += `<dt style="font-weight: 600; color: var(--gray-700);">${label}</dt><dd>${escapeHtml(value || '—')}</dd>`;
+            });
+            detailHtml += '</dl>';
+
+            // Show in a simple alert/confirm for now
+            alert(details.map(([l, v]) => `${l}: ${v}`).join('\n'));
+          }
+        } catch (error) {
+          console.error('Detail error:', error);
+          alert('❌ Lỗi tải chi tiết.');
+        }
+      };
+
+      // ========================
+      // Enter key support
+      // ========================
+      document.getElementById('lookup-phone').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          window.lookupAppointments();
+        }
+      });
+
+      // Close modal on overlay click
+      document.getElementById('cancel-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeCancelModal();
+      });
+
+      // ========================
+      // Utility
+      // ========================
+      function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+    })();
+  </script>
+</body>
+</html>
