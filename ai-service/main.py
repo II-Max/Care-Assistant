@@ -1,4 +1,4 @@
-"""
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD", "OPTIONS"])@app.api_route("/{full_path:path}", methods=["GET", "HEAD", "OPTIONS"])@app.api_route("/{full_path:path}", methods=["GET", "HEAD", "OPTIONS"])@app.api_route("/{full_path:path}", methods=["GET", "HEAD", "OPTIONS"])"""
 AI Service - FastAPI Entry Point
 
 Benh vien Tim Ha Noi - AI Customer Care Assistant
@@ -130,15 +130,17 @@ async def lifespan(app: FastAPI):
 
             # Step 4: Initialize database + run migrations
             print("\n🗄️  Step 4: Initializing database...")
+            import asyncio
             try:
-                await database.initialize()
+                loop = asyncio.get_event_loop()
+                loop.run_until_complete(database.initialize())
                 if database.is_ready:
                     print(f"   ✅ Database ready (PostgreSQL: {database.is_postgres})")
                     # Run migrations automatically
                     print("   🔄 Running schema migrations...")
                     try:
                         from database.run_migrations import run_migrations
-                        await run_migrations()
+                        loop.run_until_complete(run_migrations())
                     except Exception as mig_err:
                         print(f"   ⚠️  Migration warning: {mig_err}")
                 else:
@@ -218,9 +220,6 @@ rate_limiter = SlidingWindowRateLimiter(settings.CHAT_RATE_LIMIT_PER_MINUTE)
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
-    # Skip security headers for CORS preflight — let CORSMiddleware handle it
-    if request.method == "OPTIONS":
-        return await call_next(request)
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -685,16 +684,11 @@ async def root():
     return FileResponse(FRONTEND_DIR / "index.html")
 
 
-@app.api_route("/{full_path:path}", methods=["GET", "HEAD", "OPTIONS"])
-async def catch_all_frontend(full_path: str, request: Request = None):
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD"])
+async def catch_all_frontend(full_path: str):
     """Catch-all route cho frontend static files (HTML, CSS, JS, images)."""
     if not FRONTEND_DIR.exists():
         return JSONResponse(content={"status": "API running", "path": full_path})
-
-    # Handle OPTIONS preflight for CORS
-    if request.method == "OPTIONS":
-        from starlette.responses import Response
-        return Response(status_code=200)
 
     # Chỉ serve các file frontend, KHÔNG serve API paths
     api_prefixes = ["api/", "docs", "openapi", "redoc"]
