@@ -127,32 +127,114 @@
     @media(max-width:640px){.ac-hdr{padding:0 14px}.hdr-nav a:not(.bk){display:none}.suggested-grid{grid-template-columns:1fr}.ac-bottom{padding:8px 12px 14px}.ac-input-wrap{padding:6px 6px 6px 12px}.aichat-msgs-inner,.aqr,.ac-disc{padding-left:14px;padding-right:14px}.chat-welcome{padding:24px 14px 0}}
   </style>
 </head>
-<body class="ai-chat-page">
+<body class="homepage-rebuild ai-chat-page">
 
   <!-- TOP HEADER -->
-  <header class="ac-hdr" id="aichat-header">
-    <a href="index.html" class="ac-hdr-logo" aria-label="Ve trang chu Benh vien Tim Ha Noi">
-      <img src="https://benhvientimhanoi.vn/assets/img/bvtim_logo.png" alt="Logo Benh vien Tim Ha Noi">
-      <div>
-        <span class="logo-strong">Benh vien Tim Ha Noi</span>
-        <span class="logo-sub">Vi mot trai tim khoe</span>
+  <header class="header" id="header">
+    <div class="container">
+      <div class="top-utility" aria-label="Thông tin tiện ích">
+        <div><strong>Bệnh viện Tim Hà Nội</strong> - Thân thiện - Thuận tiện - Thanh lịch</div>
+        <div class="utility-right">
+          <a href="https://www.facebook.com/Benhvientimhanoi/" target="_blank" rel="noopener noreferrer">Facebook</a>
+          <a href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">Youtube</a>
+          <a href="about.html">Giới thiệu</a>
+          <a href="contact.html">Liên hệ</a>
+        </div>
       </div>
-    </a>
-    <div class="hdr-div" aria-hidden="true"></div>
-    <div class="hdr-title">
-      <span>&#x1F916;</span>
-      <span>Tro ly AI Cham soc Khach hang</span>
-      <span class="ai-badge">Beta</span>
+
+      <div class="brand-row">
+        <a href="index.html" class="logo" aria-label="Bệnh viện Tim Hà Nội - Trang chủ">
+          <img src="https://benhvientimhanoi.vn/assets/img/bvtim_logo.png" alt="Logo Bệnh viện Tim Hà Nội">
+          <div class="logo-copy">
+            <strong>Bệnh viện Tim Hà Nội</strong>
+            <span>Vì một trái tim khỏe</span>
+          </div>
+        </a>
+
+        <div class="contact-strip" aria-label="Thông tin liên hệ nhanh">
+          <div class="contact-chip">
+            <span class="contact-chip-icon" aria-hidden="true">📅</span>
+            <div>
+              <small>Đặt lịch hẹn</small>
+              <a href="booking.html">Khám bệnh theo yêu cầu</a>
+            </div>
+          </div>
+          <div class="contact-chip">
+            <span class="contact-chip-icon" aria-hidden="true">☎</span>
+            <div>
+              <small>Tổng đài CSKH</small>
+              <a href="tel:19001082">19001082</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="mobile-menu-btn" type="button" aria-label="Mở menu">☰</button>
+
+      <div class="main-nav-wrap">
+        <nav class="nav" id="nav" aria-label="Điều hướng chính">
+          <div class="nav-item">
+            <a href="index.html"  aria-current="page">Trang chủ</a>
+          </div>
+
+          <div class="nav-item">
+            <a href="about.html">Giới thiệu</a>
+            <ul class="dropdown">
+              <li><a href="about.html#overview">Giới thiệu chung</a></li>
+              <li><a href="about.html#leadership">Ban lãnh đạo</a></li>
+              <li><a href="about.html#organization">Cơ cấu tổ chức</a></li>
+              <li><a href="about.html#history">Quá trình phát triển</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="departments.html">Dịch vụ</a>
+            <ul class="dropdown">
+              <li><a href="departments.html#kham-tim-mach">Khám Tim mạch</a></li>
+              <li><a href="departments.html#phau-thuat-tim">Phẫu thuật tim</a></li>
+              <li><a href="departments.html#tim-mach-can-thiep">Tim mạch can thiệp</a></li>
+              <li><a href="departments.html#kham-suc-khoe">Khám sức khỏe</a></li>
+              <li><a href="departments.html#cham-soc-tai-nha">Chăm sóc tại nhà</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="booking.html">Hướng dẫn khám bệnh</a>
+            <ul class="dropdown">
+              <li><a href="booking.html#quy-trinh">Quy trình khám</a></li>
+              <li><a href="booking.html">Đặt lịch khám</a></li>
+              <li><a href="booking.html#lich-bac-si">Lịch làm việc bác sĩ</a></li>
+              <li><a href="booking.html#bang-gia">Bảng giá dịch vụ</a></li>
+              <li><a href="booking.html#bao-hiem">Bảo hiểm y tế</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="knowledge.html">Phổ biến kiến thức</a>
+            <ul class="dropdown">
+              <li><a href="knowledge.html#thong-tin-y-hoc">Thông tin y học</a></li>
+              <li><a href="knowledge.html#hieu-ve-tim-mach">Hiểu về Tim mạch</a></li>
+              <li><a href="knowledge.html#danh-cho-nguoi-benh">Dành cho người bệnh</a></li>
+              <li><a href="knowledge.html#kien-thuc-chuyen-mon">Kiến thức chuyên môn</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="news.html">Thông báo</a>
+            <ul class="dropdown">
+              <li><a href="news.html#tin-benh-vien">Tin bệnh viện</a></li>
+              <li><a href="news.html#tuyen-dung">Tuyển dụng</a></li>
+              <li><a href="news.html#thong-bao">Thông báo</a></li>
+              <li><a href="news.html#su-kien">Sự kiện</a></li>
+            </ul>
+          </div>
+
+          <div class="nav-item">
+            <a href="ai-chat.html" class="active">Chat AI</a>
+          </div>
+        </nav>
+      </div>
     </div>
-    <div class="hdr-status" aria-label="Trang thai truc tuyen">
-      <span class="s-dot" aria-hidden="true"></span>
-      <span>Dang hoat dong</span>
-    </div>
-    <nav class="hdr-nav" aria-label="Dieu huong nhanh">
-      <a href="index.html">&#x1F3E0; Trang chu</a>
-      <a href="departments.html">&#x1F3E5; Chuyen khoa</a>
-      <a href="booking.html" class="bk">&#x1F4C5; Dat lich ngay</a>
-    </nav>
   </header>
 
   <!-- MAIN LAYOUT -->
@@ -252,5 +334,6 @@
 
   <script src="js/app.js"></script>
   <script src="js/aichat-page.js"></script>
-</body>
+<script src="js/chat.js"></script>
+  </body>
 </html>

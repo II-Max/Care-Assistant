@@ -40,8 +40,7 @@ try {
   const footerMatch = index2.match(/<footer class="footer">([\s\S]*?)<\/footer>/);
   const globalFooter = `<footer class="footer">${footerMatch[1]}</footer>`;
 
-  // Process the other files
-  const files = ['about.html', 'booking.html', 'contact.html', 'departments.html'];
+  const files = ['about.html', 'booking.html', 'contact.html', 'departments.html', 'knowledge.html', 'news.html', 'ai-chat.html'];
 
   for (const file of files) {
     let content = fs.readFileSync('frontend/' + file, 'utf8');
