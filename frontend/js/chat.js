@@ -29,6 +29,7 @@
       'Các dịch vụ khám tim mạch?',
       'Địa chỉ bệnh viện?',
       'Tôi cần nói chuyện với nhân viên',
+      'Tra cứu lịch hẹn',
       'Hủy lịch khám',
     ],
     welcomeMessage: `Xin chào! 👋 Tôi là Trợ lý AI của **Bệnh viện Tim Hà Nội**.

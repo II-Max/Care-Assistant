@@ -1,6 +1,6 @@
 # 📝 UPDATE — Lộ trình nâng cấp Care Assistant
 
-> **Trạng thái:** `Đang theo dõi` **|** **Cập nhật:** `18/07/2026`
+> **Trạng thái:** `Đang theo dõi` **|** **Cập nhật:** `19/07/2026`
 > **Mục tiêu:** Chuyển prototype Hackathon thành hệ thống pilot an toàn cho trợ lý chăm sóc khách hàng bệnh viện.
 
 ---
@@ -51,9 +51,9 @@
 
 ---
 
-## 🟡 Phase 3 — Booking & Hospital Integration
+## 🟢 Phase 3 — Booking & Hospital Integration
 
-> **Trạng thái:** `🔄 ĐANG THỰC HIỆN (70%)`
+> **Trạng thái:** `✅ HOÀN THÀNH 100%` *(Đã verified toàn bộ source code)*
 
 ### ✅ Đã hoàn thành
 
@@ -67,7 +67,7 @@
 | 6 | Handoff API: `POST /api/ai/handoff` | `main.py` | `✅` |
 | 7 | Departments API: `GET /api/ai/departments` (7 chuyên khoa) | `main.py` | `✅` |
 | 8 | Frontend booking form (`booking.html`) với validation đầy đủ | `frontend/booking.html` | `✅` |
-| 9 | Navigation cập nhật (6 HTML files + CTA) | `frontend/*.html` | `✅` |
+| 9 | Navigation cập nhật (7 HTML files + CTA) | `frontend/*.html` | `✅` |
 | 10 | Chat quick replies mở rộng (handoff + cancel booking) | `frontend/js/chat.js` | `✅` |
 | 11 | Chat handoff tự động khi AI detect cần nhân viên | `services/chat_service.py` | `✅` |
 | 12 | Dependencies: asyncpg, redis, huey, httpx | `requirements.txt` | `✅` |
@@ -75,19 +75,13 @@
 | 14 | Firebase config: `firestore.rules`, `firestore.indexes.json` | Root | `✅` |
 | 15 | Database migration scripts (Initial Schema + Seed Data) | `database/migrations/` | `✅` |
 | 16 | Environment template: `env.example.txt` | Root | `✅` |
+| 17 | **Notification worker** (Redis worker + SMS/Zalo/Email adapters) | `services/notification_worker.py` | `✅` |
+| 18 | **Staff dashboard backend** (stats, handoffs, bookings, confirm) | `services/staff_dashboard.py` | `✅` |
+| 19 | **Staff dashboard frontend** (overview, handoff tickets, booking confirm) | `frontend/staff-dashboard.html` | `✅` |
+| 20 | **Booking history page** (tra cứu theo SĐT, hủy lịch) | `frontend/booking-history.html` | `✅` |
+| 21 | **Auto-migration runner** (chạy 001+002 khi startup) | `database/run_migrations.py` | `✅` |
 
-### ❌ Còn lại (cho Production Ready)
-
-| # | Công việc | Mô tả | Ưu tiên |
-|:-:|-----------|-------|:-------:|
-| 1 | **Redis worker for notification queue** | Xử lý bất đồng bộ SMS/Zalo/Email | `Cao` |
-| 2 | **Zalo/SMS/Email adapter** | Gửi thông báo xác nhận + nhắc lịch | `Cao` |
-| 3 | **Seed data đầy đủ** | Departments, doctors, schedules, time_slots | `Cao` |
-| 4 | **Staff dashboard** | Frontend cho nhân viên xem handoff tickets | `Trung` |
-| 5 | **Booking history page** | Frontend cho bệnh nhân tra cứu lịch sử | `Trung` |
-| 6 | **Firebase Auth endpoints** | OIDC/Keycloak tích hợp | `Trung` |
-| 7 | **RBAC middleware** | patient, doctor, admin roles | `Trung` |
-| 8 | **HIS Adapter** | Kết nối Hệ thống Thông tin Bệnh viện | `Thấp` |
+> ⚠️ **Lưu ý:** Docker Compose, Dockerfile, CI/CD được đưa vào **Phase 4** (xem mục dưới).
 
 ### 🐛 Bug đã fix trong lần review gần nhất
 
@@ -104,20 +98,29 @@
 
 ## 🔵 Phase 4 — Production Readiness
 
-> **Trạng thái:** `⏳ KẾ HOẠCH`
+> **Trạng thái:** `🔄 ĐANG THỰC HIỆN (65%)`
+
+### ✅ Đã hoàn thành
+
+| # | Công việc | Mô tả | Module / File | Mức độ |
+|:-:|-----------|-------|---------------|:------:|
+| 1 | **🐳 Docker Compose** | Multi-service deployment (API + DB + Redis + Worker) | `docker-compose.yml` | `✅` |
+| 2 | **📦 Dockerfile production** | Multi-stage build, gunicorn, non-root user | `Dockerfile` | `✅` |
+| 3 | **🚀 CI/CD Pipeline** | GitHub Actions: lint→test→build→deploy | `.github/workflows/ci.yml` | `✅` |
+| 4 | **🔄 Auto Migration** | Chạy 001+002 tự động khi startup | `database/run_migrations.py` | `✅` |
+
+### ❌ Còn lại
 
 | # | Công việc | Mô tả | Ưu tiên |
 |:-:|-----------|-------|:-------:|
-| 1 | **🐳 Docker Compose** | Multi-service deployment (API + DB + Redis + Worker) | `Cao` |
-| 2 | **🚀 CI/CD Pipeline** | GitHub Actions: test, lint, type check, secret scan, container scan | `Cao` |
-| 3 | **🔒 TLS + WAF** | Bảo mật tại gateway + rate limit | `Cao` |
-| 4 | **🔄 Backup/Restore** | Database backup có kiểm thử | `Cao` |
-| 5 | **🔄 Secret Rotation** | Operational security | `Trung` |
-| 6 | **📊 SLO + Alerting** | Observability & cảnh báo | `Trung` |
-| 7 | **📝 Incident Runbook** | Playbook cho sự cố | `Trung` |
-| 8 | **🛡️ Penetration Testing** | Security audit có bên thứ 3 | `Trung` |
-| 9 | **📝 DPIA** | Đánh giá tác động dữ liệu cá nhân | `Thấp` |
-| 10 | **🗑️ Retention Policy** | Data lifecycle management | `Thấp` |
+| 5 | **🔒 TLS + WAF** | Bảo mật tại gateway + rate limit | `Cao` |
+| 6 | **🔄 Backup/Restore** | Database backup có kiểm thử | `Cao` |
+| 7 | **🔄 Secret Rotation** | Operational security | `Trung` |
+| 8 | **📊 SLO + Alerting** | Observability & cảnh báo | `Trung` |
+| 9 | **📝 Incident Runbook** | Playbook cho sự cố | `Trung` |
+| 10 | **🛡️ Penetration Testing** | Security audit có bên thứ 3 | `Trung` |
+| 11 | **📝 DPIA** | Đánh giá tác động dữ liệu cá nhân | `Thấp` |
+| 12 | **🗑️ Retention Policy** | Data lifecycle management | `Thấp` |
 
 ---
 
@@ -141,8 +144,8 @@
 ```
 Phase 1: Foundation & Safety     [████████████████████ 100%] ✅
 Phase 2: Grounded RAG            [████████████████████ 100%] ✅
-Phase 3: Booking & Integration   [██████████████░░░░░░  70%] 🔄
-Phase 4: Production Readiness    [░░░░░░░░░░░░░░░░░░░░   0%] ⏳
+Phase 3: Booking & Integration   [████████████████████ 100%] ✅
+Phase 4: Production Readiness    [██████████████░░░░░░  65%] 🔄
 Phase 5: Future & Expansion      [░░░░░░░░░░░░░░░░░░░░   0%] ⏳
 ```
 

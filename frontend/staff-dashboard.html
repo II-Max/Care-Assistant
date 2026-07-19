@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Bảng điều khiển nhân viên — Bệnh viện Tim Hà Nội">
+  <title>Bảng điều khiển — Nhân viên | BV Tim Hà Nội</title>
+  <link rel="stylesheet" href="css/hospital-design.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👨‍⚕️</text></svg>">
+  <style>
+    /* Dashboard Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: calc(100vh - var(--header-height));
+      margin-top: var(--header-height);
+    }
+
+    @media (max-width: 768px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Sidebar */
+    .dash-sidebar {
+      background: var(--gray-900);
+      color: #fff;
+      padding: var(--space-6);
+      position: sticky;
+      top: var(--header-height);
+      height: calc(100vh - var(--header-height));
+      overflow-y: auto;
+    }
+
+    .dash-sidebar .dash-logo {
+      font-size: var(--font-size-lg);
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      margin-bottom: var(--space-8);
+      padding-bottom: var(--space-4);
+      border-bottom: 1px solid var(--gray-700);
+    }
+
+    .dash-nav {
+      list-style: none;
+      padding: 0;
+    }
+
+    .dash-nav li {
+      margin-bottom: var(--space-1);
+    }
+
+    .dash-nav a {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--border-radius-sm);
+      color: var(--gray-400);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      transition: all var(--transition-fast);
+    }
+
+    .dash-nav a:hover,
+    .dash-nav a.active {
+      background: var(--gray-800);
+      color: #fff;
+    }
+
+    .dash-nav .badge {
+      margin-left: auto;
+      background: var(--danger);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    /* Main Content */
+    .dash-main {
+      padding: var(--space-8);
+      background: var(--gray-50);
+      overflow-y: auto;
+      max-height: calc(100vh - var(--header-height));
+    }
+
+    .dash-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-8);
+    }
+
+    .dash-header h1 {
+      font-size: var(--font-size-2xl);
+    }
+
+    .dash-header .last-update {
+      font-size: var(--font-size-xs);
+      color: var(--gray-500);
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+      margin-bottom: var(--space-8);
+    }
+
+    .stat-card {
+      background: #fff;
+      border-radius: var(--border-radius);
+      padding: var(--space-5);
+      border: 1px solid var(--gray-200);
+      transition: all var(--transition-base);
+    }
+
+    .stat-card:hover {
+      box-shadow: var(--shadow-md);
+    }
+
+    .stat-card .stat-label {
+      font-size: var(--font-size-xs);
+      color: var(--gray-600);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .stat-card .stat-value {
+      font-size: var(--font-size-3xl);
+      font-weight: 800;
+      color: var(--gray-900);
+      margin-top: var(--space-2);
+    }
+
+    .stat-card .stat-icon {
+      font-size: 24px;
+      margin-bottom: var(--space-2);
+    }
+
+    .stat-card.emergency .stat-value { color: var(--danger); }
+    .stat-card.primary .stat-value { color: var(--primary-500); }
+    .stat-card.success .stat-value { color: var(--success); }
+    .stat-card.warning .stat-value { color: var(--warning); }
+
+    /* Section */
+    .dash-section {
+      background: #fff;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--gray-200);
+      margin-bottom: var(--space-6);
+      overflow: hidden;
+    }
+
+    .dash-section-header {
+      padding: var(--space-5) var(--space-6);
+      border-bottom: 1px solid var(--gray-200);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .dash-section-header h3 {
+      font-size: var(--font-size-lg);
+    }
+
+    .dash-section-body {
+      padding: var(--space-4);
+    }
+
+    /* Table */
+    .dash-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-size-sm);
+    }
+
+    .dash-table thead th {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      font-weight: 600;
+      color: var(--gray-600);
+      font-size: var(--font-size-xs);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--gray-200);
+      background: var(--gray-50);
+    }
+
+    .dash-table tbody td {
+      padding: var(--space-3) var(--space-4);
+      border-bottom: 1px solid var(--gray-100);
+      vertical-align: top;
+    }
+
+    .dash-table tbody tr:hover {
+      background: var(--gray-50);
+    }
+
+    .dash-table tbody tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Priority badges */
+    .priority-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .priority-badge.urgent {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    .priority-badge.high {
+      background: var(--warning-bg);
+      color: #856404;
+    }
+
+    .priority-badge.normal {
+      background: var(--gray-100);
+      color: var(--gray-600);
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .status-badge.pending {
+      background: var(--warning-bg);
+      color: #856404;
+    }
+
+    .status-badge.confirmed {
+      background: var(--success-bg);
+      color: #155724;
+    }
+
+    .status-badge.cancelled {
+      background: var(--danger-bg);
+      color: var(--danger);
+    }
+
+    /* Action buttons */
+    .action-btn {
+      padding: var(--space-1) var(--space-3);
+      border: none;
+      border-radius: var(--border-radius-sm);
+      font-size: var(--font-size-xs);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      font-family: var(--font-family);
+    }
+
+    .action-btn.confirm {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .action-btn.confirm:hover {
+      background: #22a543;
+    }
+
+    .action-btn.view {
+      background: var(--primary-50);
+      color: var(--primary-500);
+    }
+
+    .action-btn.view:hover {
+      background: var(--primary-100);
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: var(--space-8);
+      color: var(--gray-500);
+    }
+
+    .empty-state .empty-icon {
+      font-size: 48px;
+      margin-bottom: var(--space-4);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: #fff;
+      border-radius: var(--border-radius);
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: var(--space-6);
+      box-shadow: var(--shadow-xl);
+    }
+
+    .modal h3 {
+      margin-bottom: var(--space-4);
+    }
+
+    .modal-close {
+      float: right;
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--gray-500);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dash-sidebar {
+        display: none;
+      }
+      .dash-main {
+        padding: var(--space-4);
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .dash-table {
+        font-size: var(--font-size-xs);
+      }
+      .dash-table thead th,
+      .dash-table tbody td {
+        padding: var(--space-2);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header" id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🫀</div>
+        <span>BV Tim Hà Nội</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="index.html">Trang chủ</a>
+        <a href="departments.html">Chuyên khoa</a>
+        <a href="about.html">Giới thiệu</a>
+        <a href="contact.html">Liên hệ</a>
+        <a href="booking.html">📅 Đặt lịch</a>
+        <a href="ai-chat.html">💬 Chat AI</a>
+        <a href="staff-dashboard.html" class="nav-cta active">👨‍⚕️ Dashboard</a>
+      </nav>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <!-- Dashboard Layout -->
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="dash-sidebar">
+      <div class="dash-logo">👨‍⚕️ Nhân viên</div>
+      <ul class="dash-nav">
+        <li><a href="#overview" class="active" data-tab="overview">📊 Tổng quan</a></li>
+        <li><a href="#handoffs" data-tab="handoffs">📋 Yêu cầu hỗ trợ <span class="badge" id="handoff-count">0</span></a></li>
+        <li><a href="#bookings" data-tab="bookings">📅 Đặt lịch chờ <span class="badge" id="booking-count">0</span></a></li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dash-main" id="dash-main">
+
+      <!-- Overview Tab -->
+      <div class="dash-tab" id="tab-overview">
+        <div class="dash-header">
+          <div>
+            <h1>📊 Tổng quan</h1>
+            <p class="last-update" id="last-update">Cập nhật lần cuối: —</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="refreshDashboard()">🔄 Làm mới</button>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+          <div class="stat-card warning">
+            <div class="stat-icon">📋</div>
+            <div class="stat-label">Yêu cầu hỗ trợ</div>
+            <div class="stat-value" id="stat-handoffs">—</div>
+          </div>
+          <div class="stat-card primary">
+            <div class="stat-icon">📅</div>
+            <div class="stat-label">Lịch hẹn hôm nay</div>
+            <div class="stat-value" id="stat-today-bookings">—</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-icon">⏳</div>
+            <div class="stat-label">Chờ xác nhận</div>
+            <div class="stat-value" id="stat-pending-bookings">—</div>
+          </div>
+          <div class="stat-card emergency">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-label">Cảnh báo cấp cứu</div>
+            <div class="stat-value" id="stat-emergencies">—</div>
+          </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="dash-section">
+          <div class="dash-section-header">
+            <h3>⚡ Thao tác nhanh</h3>
+          </div>
+          <div class="dash-section-body" style="display: flex; gap: var(--space-3); flex-wrap: wrap;">
+            <button class="btn btn-primary" onclick="switchTab('handoffs')">📋 Xem yêu cầu hỗ trợ</button>
+            <button class="btn btn-secondary" onclick="switchTab('bookings')">📅 Xác nhận lịch hẹn</button>
+            <a href="booking.html" class="btn btn-secondary">➕ Tạo lịch hẹn</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Handoffs Tab -->
+      <div class="dash-tab" id="tab-handoffs" style="display: none;">
+        <div class="dash-header">
+          <div>
+            <h1>📋 Yêu cầu hỗ trợ</h1>
+            <p>Các yêu cầu từ AI cần nhân viên xử lý</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadHandoffs()">🔄 Làm mới</button>
+        </div>
+
+        <div class="dash-section">
+          <div class="dash-section-body" id="handoffs-list">
+            <div class="empty-state">
+              <div class="empty-icon">📋</div>
+              <p>Đang tải dữ liệu...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookings Tab -->
+      <div class="dash-tab" id="tab-bookings" style="display: none;">
+        <div class="dash-header">
+          <div>
+            <h1>📅 Đặt lịch chờ xác nhận</h1>
+            <p>Xác nhận hoặc từ chối lịch hẹn từ bệnh nhân</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadBookings()">🔄 Làm mới</button>
+        </div>
+
+        <div class="dash-section">
+          <div class="dash-section-body" id="bookings-list">
+            <div class="empty-state">
+              <div class="empty-icon">📅</div>
+              <p>Đang tải dữ liệu...</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- Detail Modal -->
+  <div class="modal-overlay" id="detail-modal">
+    <div class="modal">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <h3 id="modal-title">Chi tiết</h3>
+      <div id="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    (function() {
+      'use strict';
+
+      const API_URL = window.AI_API_URL || 'http://localhost:8001';
+
+      // ========================
+      // Tab Switching
+      // ========================
+      window.switchTab = function(tabName) {
+        document.querySelectorAll('.dash-tab').forEach(t => t.style.display = 'none');
+        document.getElementById('tab-' + tabName).style.display = 'block';
+        document.querySelectorAll('.dash-nav a').forEach(a => a.classList.remove('active'));
+        document.querySelector(`.dash-nav a[data-tab="${tabName}"]`).classList.add('active');
+
+        // Load dữ liệu
+        if (tabName === 'handoffs') loadHandoffs();
+        if (tabName === 'bookings') loadBookings();
+      };
+
+      // Tab click
+      document.querySelectorAll('.dash-nav a').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          window.switchTab(link.dataset.tab);
+        });
+      });
+
+      // ========================
+      // Load Dashboard Stats
+      // ========================
+      async function loadStats() {
+        try {
+          const response = await fetch(`${API_URL}/api/ai/dashboard/stats`);
+          const data = await response.json();
+
+          if (data.success) {
+            document.getElementById('stat-handoffs').textContent = data.data.pending_handoffs || 0;
+            document.getElementById('stat-today-bookings').textContent = data.data.today_bookings || 0;
+            document.getElementById('stat-pending-bookings').textContent = data.data.pending_bookings || 0;
+            document.getElementById('stat-emergencies').textContent = data.data.emergency_alerts_24h || 0;
+            document.getElementById('handoff-count').textContent = data.data.pending_handoffs || 0;
+            document.getElementById('booking-count').textContent = data.data.pending_bookings || 0;
+            document.getElementById('last-update').textContent = 'Cập nhật lần cuối: ' + new Date().toLocaleString('vi-VN');
+          }
+        } catch (error) {
+          console.error('Load stats error:', error);
+        }
+      }
+
+      // ========================
+      // Load Handoffs
+      // ========================
+      window.loadHandoffs = async function() {
+        const container = document.getElementById('handoffs-list');
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📋</div><p>Đang tải dữ liệu...</p></div>';
+
+        try {
+          const response = await fetch(`${API_URL}/api/ai/dashboard/handoffs`);
+          const data = await response.json();
+
+          if (!data.success || !data.data || data.data.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <p>Không có yêu cầu hỗ trợ nào đang chờ xử lý.</p>
+              </div>
+            `;
+            return;
+          }
+
+          let html = `
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Thời gian</th>
+                  <th>Lý do</th>
+                  <th>Mức độ</th>
+                  <th>Người dùng</th>
+                  <th>Nội dung</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.data.forEach(ticket => {
+            const priority = ticket.priority || 'normal';
+            const riskLevel = ticket.risk_level || 'LOW';
+            const created = ticket.created_at ? new Date(ticket.created_at).toLocaleString('vi-VN') : '—';
+
+            html += `
+              <tr>
+                <td style="white-space: nowrap; font-size: 11px;">${created}</td>
+                <td>
+                  <span class="priority-badge ${priority}">${ticket.reason || '—'}</span>
+                </td>
+                <td>
+                  <span class="priority-badge ${riskLevel === 'HIGH' ? 'urgent' : riskLevel === 'MEDIUM' ? 'high' : 'normal'}">${riskLevel}</span>
+                </td>
+                <td>${escapeHtml(ticket.patient_name || '—')}<br><small style="color: var(--gray-500);">${escapeHtml(ticket.patient_phone || '')}</small></td>
+                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;">
+                  <small>${escapeHtml((ticket.user_message || '').substring(0, 100))}</small>
+                </td>
+                <td>
+                  <button class="action-btn view" onclick="showHandoffDetail('${ticket.ticket_id}')">Xem</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          html += '</tbody></table>';
+          container.innerHTML = html;
+
+        } catch (error) {
+          console.error('Load handoffs error:', error);
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">❌</div>
+              <p>Lỗi tải dữ liệu. Vui lòng thử lại.</p>
+            </div>
+          `;
+        }
+      };
+
+      // ========================
+      // Load Bookings
+      // ========================
+      window.loadBookings = async function() {
+        const container = document.getElementById('bookings-list');
+        container.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><p>Đang tải dữ liệu...</p></div>';
+
+        try {
+          const response = await fetch(`${API_URL}/api/ai/dashboard/bookings`);
+          const data = await response.json();
+
+          if (!data.success || !data.data || data.data.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">✅</div>
+                <p>Không có lịch hẹn nào đang chờ xác nhận.</p>
+              </div>
+            `;
+            return;
+          }
+
+          let html = `
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Ngày tạo</th>
+                  <th>Bệnh nhân</th>
+                  <th>SĐT</th>
+                  <th>Khoa</th>
+                  <th>Ngày khám</th>
+                  <th>Giờ</th>
+                  <th>BHYT</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
+
+          data.data.forEach(booking => {
+            const created = booking.created_at ? new Date(booking.created_at).toLocaleString('vi-VN') : '—';
+            html += `
+              <tr>
+                <td style="white-space: nowrap; font-size: 11px;">${created}</td>
+                <td><strong>${escapeHtml(booking.patient_name || '—')}</strong></td>
+                <td>${escapeHtml(booking.patient_phone || '—')}</td>
+                <td>${escapeHtml(booking.department_name || booking.department_id || '—')}</td>
+                <td>${booking.booking_date || '—'}</td>
+                <td>${booking.booking_time || '—'}</td>
+                <td>${booking.is_bhyt ? '✅' : '—'}</td>
+                <td>
+                  <button class="action-btn confirm" onclick="confirmBooking('${booking.appointment_id}')">✓ Xác nhận</button>
+                  <button class="action-btn view" onclick="showBookingDetail('${booking.appointment_id}')">Xem</button>
+                </td>
+              </tr>
+            `;
+          });
+
+          html += '</tbody></table>';
+          container.innerHTML = html;
+
+        } catch (error) {
+          console.error('Load bookings error:', error);
+          container.innerHTML = `
+            <div class="empty-state">
+              <div class="empty-icon">❌</div>
+              <p>Lỗi tải dữ liệu. Vui lòng thử lại.</p>
+            </div>
+          `;
+        }
+      };
+
+      // ========================
+      // Confirm Booking
+      // ========================
+      window.confirmBooking = async function(appointmentId) {
+        if (!confirm('Xác nhận lịch hẹn này?')) return;
+
+        try {
+          const response = await fetch(`${API_URL}/api/ai/dashboard/bookings/${appointmentId}/confirm`, {
+            method: 'POST'
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            alert('✅ Đã xác nhận lịch hẹn!');
+            loadBookings();
+            loadStats();
+          } else {
+            alert('❌ ' + (data.message || 'Lỗi xác nhận.'));
+          }
+        } catch (error) {
+          console.error('Confirm booking error:', error);
+          alert('❌ Lỗi kết nối. Vui lòng thử lại.');
+        }
+      };
+
+      // ========================
+      // Show Handoff Detail Modal
+      // ========================
+      window.showHandoffDetail = async function(ticketId) {
+        try {
+          const response = await fetch(`${API_URL}/api/ai/dashboard/handoffs/${ticketId}`);
+          const data = await response.json();
+
+          let bodyHtml = '<p style="color: var(--gray-500);">Không có thông tin chi tiết.</p>';
+
+          if (data.success && data.data) {
+            const t = data.data;
+            bodyHtml = `
+              <dl style="display: grid; grid-template-columns: auto 1fr; gap: var(--space-3) var(--space-4); font-size: 14px;">
+                <dt style="font-weight: 600; color: var(--gray-700);">Mã ticket</dt>
+                <dd>${escapeHtml(t.ticket_id || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Lý do</dt>
+                <dd>${escapeHtml(t.reason_description || t.reason || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Mức độ</dt>
+                <dd><span class="priority-badge ${(t.risk_level || 'LOW') === 'HIGH' ? 'urgent' : ((t.risk_level || 'LOW') === 'MEDIUM' ? 'high' : 'normal')}">${t.risk_level || 'LOW'}</span></dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Tên bệnh nhân</dt>
+                <dd>${escapeHtml(t.patient_name || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">SĐT</dt>
+                <dd>${escapeHtml(t.patient_phone || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Tin nhắn</dt>
+                <dd style="background: var(--gray-50); padding: var(--space-3); border-radius: var(--border-radius-sm);">${escapeHtml(t.user_message || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Phản hồi AI</dt>
+                <dd style="background: var(--gray-50); padding: var(--space-3); border-radius: var(--border-radius-sm);">${escapeHtml(t.ai_response || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Ghi chú</dt>
+                <dd>${escapeHtml(t.notes || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Thời gian</dt>
+                <dd>${t.created_at ? new Date(t.created_at).toLocaleString('vi-VN') : '—'}</dd>
+              </dl>
+            `;
+          }
+
+          document.getElementById('modal-title').textContent = '📋 Chi tiết yêu cầu hỗ trợ';
+          document.getElementById('modal-body').innerHTML = bodyHtml;
+          document.getElementById('detail-modal').classList.add('open');
+
+        } catch (error) {
+          console.error('Load detail error:', error);
+          alert('❌ Lỗi tải chi tiết.');
+        }
+      };
+
+      // ========================
+      // Show Booking Detail Modal
+      // ========================
+      window.showBookingDetail = async function(appointmentId) {
+        try {
+          const response = await fetch(`${API_URL}/api/ai/booking/${appointmentId}`);
+          const data = await response.json();
+
+          let bodyHtml = '<p style="color: var(--gray-500);">Không có thông tin chi tiết.</p>';
+
+          if (data.success && data.appointment) {
+            const a = data.appointment;
+            bodyHtml = `
+              <dl style="display: grid; grid-template-columns: auto 1fr; gap: var(--space-3) var(--space-4); font-size: 14px;">
+                <dt style="font-weight: 600; color: var(--gray-700);">Mã lịch hẹn</dt>
+                <dd>${escapeHtml(a.appointment_id || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Tên bệnh nhân</dt>
+                <dd>${escapeHtml(a.patient_name || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">SĐT</dt>
+                <dd>${escapeHtml(a.patient_phone || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Ngày khám</dt>
+                <dd>${escapeHtml(a.booking_date || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Giờ khám</dt>
+                <dd>${escapeHtml(a.booking_time || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Khoa</dt>
+                <dd>${escapeHtml(a.department_id || '—')}</dd>
+                <dt style="font-weight: 600; color: var(--gray-700);">Trạng thái</dt>
+                <dd><span class="status-badge ${a.status || 'pending'}">${a.status || 'pending'}</span></dd>
+              </dl>
+            `;
+          }
+
+          document.getElementById('modal-title').textContent = '📅 Chi tiết lịch hẹn';
+          document.getElementById('modal-body').innerHTML = bodyHtml;
+          document.getElementById('detail-modal').classList.add('open');
+
+        } catch (error) {
+          console.error('Load detail error:', error);
+          alert('❌ Lỗi tải chi tiết.');
+        }
+      };
+
+      // ========================
+      // Modal
+      // ========================
+      window.closeModal = function() {
+        document.getElementById('detail-modal').classList.remove('open');
+      };
+
+      // Close modal on overlay click
+      document.getElementById('detail-modal').addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeModal();
+      });
+
+      // ========================
+      // Refresh
+      // ========================
+      window.refreshDashboard = function() {
+        loadStats();
+      };
+
+      // ========================
+      // Utility
+      // ========================
+      function escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+
+      // ========================
+      // Auto-refresh (30s)
+      // ========================
+      setInterval(loadStats, 30000);
+
+      // ========================
+      // Init
+      // ========================
+      loadStats();
+
+    })();
+  </script>
+</body>
+</html>

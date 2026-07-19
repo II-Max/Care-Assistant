@@ -1,8 +1,5 @@
 """
-
 AI Service - FastAPI Entry Point
-
-
 
 Benh vien Tim Ha Noi - AI Customer Care Assistant
 RAG-based chatbot service voi NVIDIA NIM API.
@@ -10,10 +7,8 @@ RAG-based chatbot service voi NVIDIA NIM API.
 Phase 3: Booking, Handoff, Departments, Auth.
 
 Startup sequence:
-
 1. Load documents tu Data/
 2. Chunk documents
-
 3. Tao embeddings & build FAISS/ChromaDB index
 4. Initialize Emergency Detector
 5. Initialize Chat Service
@@ -21,16 +16,6 @@ Startup sequence:
 7. Start FastAPI server
 
 Endpoints:
-
-
-
-
-
-
-
-
-
-
 - POST /api/ai/chat              - Chat voi AI
 - GET  /api/ai/health            - Health check
 - POST /api/ai/booking           - Dat lich kham
@@ -49,7 +34,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from starlette.requests import Request
 from starlette.responses import FileResponse, JSONResponse
-from starlette.staticfiles import StaticFiles
+# from starlette.staticfiles import StaticFiles  # Not needed - using catch-all route
 
 # Fix Windows console encoding cho Unicode
 if sys.stdout.encoding.lower() in ('cp1252', 'ascii'):
@@ -72,6 +57,8 @@ from services.chat_service import chat_service
 from services.rate_limiter import SlidingWindowRateLimiter
 from services.booking_service import booking_service, BookingRequest, DEPARTMENTS
 from services.handoff_service import handoff_service, HandoffRequest
+from services.staff_dashboard import staff_dashboard
+from services.notification_worker import notification_worker
 from database.connection import database
 
 # ========================
@@ -141,14 +128,19 @@ async def lifespan(app: FastAPI):
             from rag.retriever import retriever as retriever_singleton
             retriever_singleton.enable_hybrid()
 
-            # Step 4: Initialize database
+            # Step 4: Initialize database + run migrations
             print("\n🗄️  Step 4: Initializing database...")
-            import asyncio
             try:
-                loop = asyncio.get_event_loop()
-                loop.run_until_complete(database.initialize())
+                await database.initialize()
                 if database.is_ready:
                     print(f"   ✅ Database ready (PostgreSQL: {database.is_postgres})")
+                    # Run migrations automatically
+                    print("   🔄 Running schema migrations...")
+                    try:
+                        from database.run_migrations import run_migrations
+                        await run_migrations()
+                    except Exception as mig_err:
+                        print(f"   ⚠️  Migration warning: {mig_err}")
                 else:
                     print("   ⚠️  Database not ready")
             except Exception as db_err:
@@ -168,6 +160,14 @@ async def lifespan(app: FastAPI):
 
             emergency_detector.initialize()
             chat_service.initialize()
+
+            # Step 5: Start notification worker
+            print("\n📨 Step 5: Starting notification worker...")
+            try:
+                notification_worker.start()
+                print("   ✅ Notification worker started")
+            except Exception as nw_err:
+                print(f"   ⚠️ Notification worker: {nw_err}")
 
             app_state["is_ready"] = True
             app_state["startup_time"] = time.time() - start_time
@@ -202,13 +202,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS
+# CORS — hỗ trợ cả preflight OPTIONS requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.ALLOWED_ORIGINS,
     allow_credentials=False,
-    allow_methods=["POST", "GET"],
-    allow_headers=["Content-Type", "X-Request-ID"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type", "X-Request-ID", "Authorization", "Origin", "Accept"],
+    expose_headers=["*"],
+    max_age=600,  # Cache preflight 10 phút
 )
 
 rate_limiter = SlidingWindowRateLimiter(settings.CHAT_RATE_LIMIT_PER_MINUTE)
@@ -216,6 +218,9 @@ rate_limiter = SlidingWindowRateLimiter(settings.CHAT_RATE_LIMIT_PER_MINUTE)
 
 @app.middleware("http")
 async def add_security_headers(request: Request, call_next):
+    # Skip security headers for CORS preflight — let CORSMiddleware handle it
+    if request.method == "OPTIONS":
+        return await call_next(request)
     response = await call_next(request)
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
@@ -576,10 +581,101 @@ async def departments_endpoint():
 
 
 # ========================
+# Phase 3: Staff Dashboard Endpoints
+# ========================
+
+@app.get("/api/ai/dashboard/stats")
+async def dashboard_stats_endpoint():
+    """Lấy thống kê tổng quan cho staff dashboard."""
+    try:
+        stats = await staff_dashboard.get_stats()
+        return {
+            "success": True,
+            "data": {
+                "pending_handoffs": stats.pending_handoffs,
+                "today_bookings": stats.today_bookings,
+                "pending_bookings": stats.pending_bookings,
+                "emergency_alerts_24h": 0,
+                "total_conversations_today": 0,
+                "avg_confidence": 0.0,
+                "avg_response_time_ms": 0
+            }
+        }
+    except Exception as e:
+        print(f"❌ Dashboard stats error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": "Lỗi lấy thống kê."}
+        )
+
+
+@app.get("/api/ai/dashboard/handoffs")
+async def dashboard_handoffs_endpoint():
+    """Lấy danh sách handoff tickets cho staff."""
+    try:
+        tickets = await staff_dashboard.get_handoff_tickets()
+        return {
+            "success": True,
+            "data": tickets
+        }
+    except Exception as e:
+        print(f"❌ Dashboard handoffs error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": [], "message": "Lỗi lấy danh sách."}
+        )
+
+
+@app.get("/api/ai/dashboard/handoffs/{ticket_id}")
+async def dashboard_handoff_detail_endpoint(ticket_id: str):
+    """Lấy chi tiết một handoff ticket."""
+    try:
+        tickets = await staff_dashboard.get_handoff_tickets(limit=100)
+        ticket = next((t for t in tickets if t["ticket_id"] == ticket_id), None)
+        if ticket:
+            return {"success": True, "data": ticket}
+        return {"success": False, "data": None, "message": "Không tìm thấy ticket."}
+    except Exception as e:
+        print(f"❌ Handoff detail error: {e}")
+        return {"success": False, "data": None, "message": "Lỗi."}
+
+
+@app.get("/api/ai/dashboard/bookings")
+async def dashboard_bookings_endpoint():
+    """Lấy danh sách booking chờ xác nhận."""
+    try:
+        bookings = await staff_dashboard.get_pending_bookings()
+        return {
+            "success": True,
+            "data": bookings
+        }
+    except Exception as e:
+        print(f"❌ Dashboard bookings error: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "data": [], "message": "Lỗi lấy danh sách."}
+        )
+
+
+@app.post("/api/ai/dashboard/bookings/{appointment_id}/confirm")
+async def dashboard_confirm_booking_endpoint(appointment_id: str):
+    """Xác nhận booking từ staff."""
+    try:
+        result = await staff_dashboard.confirm_booking(appointment_id)
+        return result
+    except Exception as e:
+        print(f"❌ Confirm booking error: {e}")
+        return {"success": False, "message": "Lỗi xác nhận."}
+
+
+# ========================
 # Frontend Static Files
 # ========================
 
 FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
+
+# Dùng catch-all route ở CUỐI để serve frontend static files
+# mà không dùng StaticFiles mount (gây xung đột CORS preflight)
 
 @app.get("/")
 async def root():
@@ -588,9 +684,44 @@ async def root():
         return JSONResponse(content={"status": "API running"})
     return FileResponse(FRONTEND_DIR / "index.html")
 
-# Mount static assets after API routes, so API paths always take precedence.
-if FRONTEND_DIR.exists():
-    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="frontend")
+
+@app.api_route("/{full_path:path}", methods=["GET", "HEAD", "OPTIONS"])
+async def catch_all_frontend(full_path: str, request: Request = None):
+    """Catch-all route cho frontend static files (HTML, CSS, JS, images)."""
+    if not FRONTEND_DIR.exists():
+        return JSONResponse(content={"status": "API running", "path": full_path})
+
+    # Handle OPTIONS preflight for CORS
+    if request.method == "OPTIONS":
+        from starlette.responses import Response
+        return Response(status_code=200)
+
+    # Chỉ serve các file frontend, KHÔNG serve API paths
+    api_prefixes = ["api/", "docs", "openapi", "redoc"]
+    if any(full_path.startswith(prefix) for prefix in api_prefixes):
+        return JSONResponse(
+            status_code=404,
+            content={"detail": "Not Found"}
+        )
+
+    file_path = FRONTEND_DIR / full_path
+
+    # Nếu không tìm thấy file cụ thể, thử thêm .html
+    if not file_path.exists():
+        file_path_html = file_path.with_suffix(".html")
+        if file_path_html.exists() and file_path_html.is_file():
+            return FileResponse(file_path_html)
+        # Fallback: index.html cho SPA-like routing
+        return FileResponse(FRONTEND_DIR / "index.html")
+
+    # Nếu là thư mục, serve index.html trong đó
+    if file_path.is_dir():
+        index_file = file_path / "index.html"
+        if index_file.exists():
+            return FileResponse(index_file)
+        return FileResponse(FRONTEND_DIR / "index.html")
+
+    return FileResponse(file_path)
 
 
 # ========================
@@ -605,3 +736,4 @@ if __name__ == "__main__":
         reload=False,
         log_level="info"
     )
+
